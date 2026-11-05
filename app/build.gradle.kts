@@ -8,11 +8,11 @@ plugins {
 }
 
 android {
-    namespace = "mx.tec.appbase"
+    namespace = "mx.tec.app_sonrisas"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "mx.tec.appbase"
+        applicationId = "mx.tec.app_sonrisas"
         minSdk = 26
         targetSdk = 36
         versionCode = 1
