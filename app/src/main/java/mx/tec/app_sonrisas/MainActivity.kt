@@ -5,7 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import mx.tec.app_sonrisas.navigation.AppNavigation
-import mx.tec.app_sonrisas.ui.theme.AppBaseTheme
+import mx.tec.app_sonrisas.ui.theme.AppSonrisasTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -14,7 +14,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             // Si tu proyecto tiene otro nombre, el tema también se llama distinto
             // (por ejemplo MiProyectoTheme). Revisa ui/theme/Theme.kt.
-            AppBaseTheme {
+            AppSonrisasTheme {
                 AppNavigation()
             }
         }
