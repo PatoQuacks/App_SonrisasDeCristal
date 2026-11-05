@@ -12,8 +12,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            // Si tu proyecto tiene otro nombre, el tema también se llama distinto
-            // (por ejemplo MiProyectoTheme). Revisa ui/theme/Theme.kt.
             AppSonrisasTheme {
                 AppNavigation()
             }
