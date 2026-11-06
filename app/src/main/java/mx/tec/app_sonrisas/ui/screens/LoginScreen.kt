@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lock
@@ -27,10 +28,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.BlendMode.Companion.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import mx.tec.app_sonrisas.ui.viewmodel.SesionViewModel
 
 // LOGIN REAL: valida correo y contraseña contra la API (POST /login).
@@ -58,20 +62,25 @@ fun LoginScreen(
                 .padding(innerPadding)
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
+            //verticalArrangement = Arrangement.Center,
         ) {
+            /*
             Icon(
                 imageVector = Icons.Filled.Lock,
                 contentDescription = null,
                 modifier = Modifier.size(64.dp),
                 tint = MaterialTheme.colorScheme.primary,
             )
+
+             */
+            Spacer(Modifier.height(24.dp))
+            Text("¡Bienvenido!", style = MaterialTheme.typography.headlineMedium)
             Spacer(Modifier.height(16.dp))
-            Text("Bienvenido", style = MaterialTheme.typography.headlineMedium)
             Text(
                 "Inicia sesión para continuar",
-                style = MaterialTheme.typography.bodyMedium,
+                fontSize = 20.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontWeight = FontWeight.Bold
             )
             Spacer(Modifier.height(32.dp))
 
@@ -95,6 +104,12 @@ fun LoginScreen(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 modifier = Modifier.fillMaxWidth(),
             )
+            Spacer(Modifier.height(18.dp))
+            Text(
+                text = "¿Olvidaste tu contraseña? Favor de contactar a un administrador",
+                fontSize = 11.sp,
+                color = MaterialTheme.colorScheme.secondary,
+            )
 
             // Mensaje de error (401, sin conexión, etc.)
             estado.error?.let { mensaje ->
@@ -106,12 +121,12 @@ fun LoginScreen(
                     textAlign = TextAlign.Center,
                 )
             }
-            Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(18.dp))
 
             Button(
                 onClick = { sesionViewModel.iniciarSesion(correo, contrasena) },
                 enabled = !estado.cargando,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.width(172.dp),
             ) {
                 if (estado.cargando) {
                     CircularProgressIndicator(
@@ -119,7 +134,10 @@ fun LoginScreen(
                         strokeWidth = 2.dp,
                     )
                 } else {
-                    Text("Iniciar sesión")
+                    Text(
+                        text = "Iniciar sesión",
+                        fontSize = 16.sp,
+                        )
                 }
             }
 
