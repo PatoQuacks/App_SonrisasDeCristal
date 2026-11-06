@@ -27,7 +27,7 @@ fun AppSonrisasTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     // Dynamic color (Android 12+) toma los colores del fondo de pantalla del teléfono.
     // Ponlo en false si quieres que siempre se usen tus colores.
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
