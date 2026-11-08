@@ -1,8 +1,10 @@
 package mx.tec.app_sonrisas.ui.components
 
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemColors
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import mx.tec.app_sonrisas.navigation.Pantalla
@@ -14,13 +16,24 @@ fun BarraInferior(
     rutaActual: String?,
     onSeleccionar: (Pantalla) -> Unit,
 ) {
-    NavigationBar {
+    NavigationBar(
+        containerColor = MaterialTheme.colorScheme.secondary,
+    ) {
         pantallasBarraInferior.forEach { pantalla ->
             NavigationBarItem(
                 selected = rutaActual == pantalla.route,
                 onClick = { onSeleccionar(pantalla) },
                 icon = { Icon(pantalla.icono, contentDescription = pantalla.titulo) },
                 label = { Text(pantalla.titulo) },
+                colors = NavigationBarItemColors(
+                    selectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    selectedTextColor = MaterialTheme.colorScheme.onSecondary,
+                    selectedIndicatorColor = MaterialTheme.colorScheme.inversePrimary,
+                    unselectedIconColor = MaterialTheme.colorScheme.onSecondary,
+                    unselectedTextColor = MaterialTheme.colorScheme.onSecondary,
+                    disabledIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    disabledTextColor = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             )
         }
     }

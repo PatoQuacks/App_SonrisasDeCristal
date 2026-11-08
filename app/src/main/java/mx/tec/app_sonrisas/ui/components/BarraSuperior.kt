@@ -24,9 +24,9 @@ fun BarraSuperior(titulo: String, onAbrirMenu: () -> Unit) {
             }
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
-            titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-            navigationIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            containerColor = MaterialTheme.colorScheme.secondary,
+            titleContentColor = MaterialTheme.colorScheme.onSecondary,
+            navigationIconContentColor = MaterialTheme.colorScheme.onSecondary,
         ),
     )
 }
