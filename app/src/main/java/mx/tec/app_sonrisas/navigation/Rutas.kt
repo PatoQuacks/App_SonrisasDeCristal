@@ -2,15 +2,20 @@ package mx.tec.app_sonrisas.navigation
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.AccountBox
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.ui.graphics.vector.ImageVector
 
 // ------------------------------------------------------------------
@@ -34,34 +39,41 @@ sealed class Pantalla(val route: String, val titulo: String, val icono: ImageVec
 
     // Barra inferior (bottom navigation)
     data object Inicio : Pantalla("inicio", "Inicio", Icons.Filled.Home)
-    data object Buscar : Pantalla("buscar", "Buscar", Icons.Filled.Search)
-    data object Notificaciones : Pantalla("notificaciones", "Avisos", Icons.Filled.Notifications)
-    data object Favoritos : Pantalla("favoritos", "Favoritos", Icons.Filled.Favorite)
-    data object Perfil : Pantalla("perfil", "Perfil", Icons.Filled.Person)
+    data object Asistencia : Pantalla("asistencia", "Asistencia", Icons.Filled.CheckCircle)
+    data object Capacitaciones : Pantalla("capacitaciones", "Capacitaciones", Icons.Filled.DateRange)
+    data object Incidencias : Pantalla("incidencias", "Incidencias", Icons.Filled.Warning)
 
     // Menú lateral (navigation drawer)
-    data object Calendario : Pantalla("calendario", "Calendario", Icons.Filled.DateRange)
-    data object Mensajes : Pantalla("mensajes", "Mensajes", Icons.Filled.Email)
-    data object Reportes : Pantalla("reportes", "Reportes", Icons.AutoMirrored.Filled.List)
+    data object Empleados : Pantalla("empleados", "Empleados", Icons.Filled.AccountBox)
+    data object AgregarEmpleado : Pantalla("agregar_empleados", "Agregar Empleados", Icons.Filled.AccountBox)
+    data object Salas : Pantalla("salas", "Salas", Icons.Filled.LocationOn)
+    data object AgregarSala : Pantalla("agregar_sala", "Agregar Sala", Icons.Filled.LocationOn)
+
+    data object Coordinadores : Pantalla("coordinadores", "Coordinadores", Icons.Filled.Face)
+    data object PermisosCoordinadores : Pantalla("permisos_coordinadores", "Permisos de Coordinadores", Icons.Filled.Face)
     data object Configuracion : Pantalla("configuracion", "Configuración", Icons.Filled.Settings)
     data object AcercaDe : Pantalla("acerca_de", "Acerca de", Icons.Filled.Info)
+    data object Perfil : Pantalla("perfil", "Perfil", Icons.Filled.Person)
 }
 
 // Material Design recomienda de 3 a 5 opciones en la barra inferior.
 val pantallasBarraInferior = listOf(
     Pantalla.Inicio,
-    Pantalla.Buscar,
-    Pantalla.Notificaciones,
-    Pantalla.Favoritos,
-    Pantalla.Perfil,
+    Pantalla.Asistencia,
+    Pantalla.Capacitaciones,
+    Pantalla.Incidencias,
 )
 
 val pantallasMenuLateral = listOf(
-    Pantalla.Calendario,
-    Pantalla.Mensajes,
-    Pantalla.Reportes,
+    Pantalla.Empleados,
+    Pantalla.Coordinadores,
+    Pantalla.Salas,
+    Pantalla.PermisosCoordinadores,
+    Pantalla.AgregarEmpleado,
+    Pantalla.AgregarSala,
     Pantalla.Configuracion,
     Pantalla.AcercaDe,
+    Pantalla.Perfil,
 )
 
 // Se usa para encontrar el título de la pantalla actual.

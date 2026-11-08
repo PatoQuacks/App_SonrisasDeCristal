@@ -5,10 +5,10 @@ import mx.tec.app_sonrisas.navigation.Pantalla
 import mx.tec.app_sonrisas.ui.components.PantallaEjemplo
 
 @Composable
-fun FavoritosScreen() {
+fun AsistenciaScreen() {
     // TODO: reemplaza PantallaEjemplo con el contenido real de esta pantalla.
     PantallaEjemplo(
-        pantalla = Pantalla.Favoritos,
-        descripcion = "Aquí pueden ir los elementos guardados por el usuario.",
+        pantalla = Pantalla.Asistencia,
+        descripcion = "Aquí se tendra el espacio para dar asistencia o marcar faltas de empleados",
     )
 }

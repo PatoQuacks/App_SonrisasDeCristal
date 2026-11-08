@@ -6,16 +6,19 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import mx.tec.app_sonrisas.data.remote.Usuario
-import mx.tec.app_sonrisas.ui.screens.inferior.BuscarScreen
-import mx.tec.app_sonrisas.ui.screens.inferior.FavoritosScreen
+import mx.tec.app_sonrisas.ui.screens.inferior.AsistenciaScreen
+import mx.tec.app_sonrisas.ui.screens.inferior.EmpleadosScreen
+import mx.tec.app_sonrisas.ui.screens.inferior.IncidenciasScreen
 import mx.tec.app_sonrisas.ui.screens.inferior.InicioScreen
-import mx.tec.app_sonrisas.ui.screens.inferior.NotificacionesScreen
 import mx.tec.app_sonrisas.ui.screens.inferior.PerfilScreen
 import mx.tec.app_sonrisas.ui.screens.lateral.AcercaDeScreen
-import mx.tec.app_sonrisas.ui.screens.lateral.CalendarioScreen
+import mx.tec.app_sonrisas.ui.screens.lateral.AgregarEmpleadoScreen
+import mx.tec.app_sonrisas.ui.screens.lateral.AgregarSalaScreen
+import mx.tec.app_sonrisas.ui.screens.lateral.CapacitacionesScreen
 import mx.tec.app_sonrisas.ui.screens.lateral.ConfiguracionScreen
-import mx.tec.app_sonrisas.ui.screens.lateral.MensajesScreen
-import mx.tec.app_sonrisas.ui.screens.lateral.ReportesScreen
+import mx.tec.app_sonrisas.ui.screens.lateral.CoordinadoresScreen
+import mx.tec.app_sonrisas.ui.screens.lateral.PermisosCoordinadoresScreen
+import mx.tec.app_sonrisas.ui.screens.lateral.SalasScreen
 
 // Navegación de NIVEL 2: las pantallas que viven dentro de la parte principal.
 // Este NavHost se dibuja en medio del Scaffold, entre la barra superior y la inferior.
@@ -32,16 +35,19 @@ fun PrincipalNavHost(
     ) {
         // Barra inferior
         composable(Pantalla.Inicio.route) { InicioScreen() }
-        composable(Pantalla.Buscar.route) { BuscarScreen() }
-        composable(Pantalla.Notificaciones.route) { NotificacionesScreen() }
-        composable(Pantalla.Favoritos.route) { FavoritosScreen() }
-        composable(Pantalla.Perfil.route) { PerfilScreen(usuario = usuario) }
+        composable(Pantalla.Asistencia.route) { AsistenciaScreen() }
+        composable(Pantalla.Capacitaciones.route) { CapacitacionesScreen() }
+        composable(Pantalla.Incidencias.route) { IncidenciasScreen() }
 
         // Menú lateral
-        composable(Pantalla.Calendario.route) { CalendarioScreen() }
-        composable(Pantalla.Mensajes.route) { MensajesScreen() }
-        composable(Pantalla.Reportes.route) { ReportesScreen() }
+        composable(Pantalla.Empleados.route) { EmpleadosScreen() }
+        composable(Pantalla.Coordinadores.route) { CoordinadoresScreen() }
+        composable(Pantalla.Salas.route) { SalasScreen() }
+        composable(Pantalla.PermisosCoordinadores.route) { PermisosCoordinadoresScreen() }
+        composable(Pantalla.AgregarEmpleado.route) { AgregarEmpleadoScreen() }
+        composable(Pantalla.AgregarSala.route) { AgregarSalaScreen() }
         composable(Pantalla.Configuracion.route) { ConfiguracionScreen() }
         composable(Pantalla.AcercaDe.route) { AcercaDeScreen() }
+        composable(Pantalla.Perfil.route) { PerfilScreen(usuario = usuario) }
     }
 }

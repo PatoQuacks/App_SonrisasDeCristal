@@ -5,10 +5,10 @@ import mx.tec.app_sonrisas.navigation.Pantalla
 import mx.tec.app_sonrisas.ui.components.PantallaEjemplo
 
 @Composable
-fun CalendarioScreen() {
+fun CapacitacionesScreen() {
     // TODO: reemplaza PantallaEjemplo con el contenido real de esta pantalla.
     PantallaEjemplo(
-        pantalla = Pantalla.Calendario,
-        descripcion = "Aquí puede ir un calendario o agenda.",
+        pantalla = Pantalla.Capacitaciones,
+        descripcion = "Aquí puede ir el listado de capacitaciones de la sucursal y sus progresos",
     )
 }

@@ -5,10 +5,10 @@ import mx.tec.app_sonrisas.navigation.Pantalla
 import mx.tec.app_sonrisas.ui.components.PantallaEjemplo
 
 @Composable
-fun ReportesScreen() {
+fun AgregarSalaScreen() {
     // TODO: reemplaza PantallaEjemplo con el contenido real de esta pantalla.
     PantallaEjemplo(
-        pantalla = Pantalla.Reportes,
-        descripcion = "Aquí pueden ir reportes o resúmenes.",
+        pantalla = Pantalla.AgregarSala,
+        descripcion = "Aquí se veran los parametros para agregar una sala a la sucursal",
     )
 }

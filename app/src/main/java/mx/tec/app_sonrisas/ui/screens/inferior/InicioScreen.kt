@@ -9,6 +9,7 @@ fun InicioScreen() {
     // TODO: reemplaza PantallaEjemplo con el contenido real de esta pantalla.
     PantallaEjemplo(
         pantalla = Pantalla.Inicio,
-        descripcion = "Pantalla principal después del login. Reemplaza este contenido.",
+        descripcion = "Pantalla principal después del login. Aquí ira información general de " +
+                "asistencia y de la estancia para responsable.",
     )
 }
