@@ -11,10 +11,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.launch
+import mx.tec.app_sonrisas.navigation.Pantalla
 import mx.tec.app_sonrisas.navigation.PrincipalNavHost
 import mx.tec.app_sonrisas.navigation.todasLasPantallas
 import mx.tec.app_sonrisas.ui.components.BarraInferior
@@ -57,10 +59,7 @@ fun PrincipalScreen(
                 rutaActual = rutaActual,
                 onSeleccionar = { pantalla ->
                     scope.launch { drawerState.close() }
-                    navController.navigate(pantalla.route) {
-                        // Evita apilar la misma pantalla dos veces.
-                        launchSingleTop = true
-                    }
+                    navController.navegarAPantalla(pantalla)
                 },
                 onCerrarSesion = {
                     scope.launch { drawerState.close() }
@@ -80,16 +79,7 @@ fun PrincipalScreen(
                 BarraInferior(
                     rutaActual = rutaActual,
                     onSeleccionar = { pantalla ->
-                        navController.navigate(pantalla.route) {
-                            // Patrón recomendado para barras inferiores:
-                            // regresa a Inicio sin acumular pantallas en la pila
-                            // y conserva el estado de cada pestaña.
-                            popUpTo(navController.graph.findStartDestination().id) {
-                                saveState = true
-                            }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
+                        navController.navegarAPantalla(pantalla)
                     },
                 )
             },
@@ -100,5 +90,17 @@ fun PrincipalScreen(
                 modifier = Modifier.padding(innerPadding),
             )
         }
+    }
+}
+
+// Función de extensión sobre NavController para navegar entre pantallas principales
+// manteniendo una pila limpia y conservando el estado de cada pestaña/menú.
+fun NavController.navegarAPantalla(pantalla: Pantalla) {
+    navigate(pantalla.route) {
+        popUpTo(graph.findStartDestination().id) {
+            saveState = true
+        }
+        launchSingleTop = true
+        restoreState = true
     }
 }
