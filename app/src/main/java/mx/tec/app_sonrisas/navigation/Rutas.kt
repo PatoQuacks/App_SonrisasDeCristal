@@ -17,7 +17,8 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.ui.graphics.vector.ImageVector
-
+import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.Home
 // ------------------------------------------------------------------
 // NIVEL 1: rutas de la app completa
 // La app tiene solo dos "lugares": el login y la parte principal.
@@ -54,6 +55,10 @@ sealed class Pantalla(val route: String, val titulo: String, val icono: ImageVec
     data object Configuracion : Pantalla("configuracion", "Configuración", Icons.Filled.Settings)
     data object AcercaDe : Pantalla("acerca_de", "Acerca de", Icons.Filled.Info)
     data object Perfil : Pantalla("perfil", "Perfil", Icons.Filled.Person)
+
+    //Director
+    data object ReporteDirector : Pantalla("reporte_director", "Reportes", Icons.Filled.List)
+    data object CoberturaDirector : Pantalla("cobertura_director", "Cobertura", Icons.Filled.Home)
 }
 
 // Material Design recomienda de 3 a 5 opciones en la barra inferior.
@@ -74,6 +79,8 @@ val pantallasMenuLateral = listOf(
     Pantalla.Configuracion,
     Pantalla.AcercaDe,
     Pantalla.Perfil,
+    Pantalla.ReporteDirector,
+    Pantalla.CoberturaDirector
 )
 
 // Se usa para encontrar el título de la pantalla actual.

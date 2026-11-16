@@ -19,6 +19,11 @@ import mx.tec.app_sonrisas.ui.screens.lateral.ConfiguracionScreen
 import mx.tec.app_sonrisas.ui.screens.lateral.CoordinadoresScreen
 import mx.tec.app_sonrisas.ui.screens.lateral.PermisosCoordinadoresScreen
 import mx.tec.app_sonrisas.ui.screens.lateral.SalasScreen
+import androidx.lifecycle.viewmodel.compose.viewModel
+import mx.tec.app_sonrisas.ui.screens.director.ReporteAsistenciaScreen
+import mx.tec.app_sonrisas.ui.screens.director.SucursalesScreen
+import mx.tec.app_sonrisas.ui.viewmodel.DirectorViewModel
+
 
 // Navegación de NIVEL 2: las pantallas que viven dentro de la parte principal.
 // Este NavHost se dibuja en medio del Scaffold, entre la barra superior y la inferior.
@@ -49,5 +54,32 @@ fun PrincipalNavHost(
         composable(Pantalla.Configuracion.route) { ConfiguracionScreen() }
         composable(Pantalla.AcercaDe.route) { AcercaDeScreen() }
         composable(Pantalla.Perfil.route) { PerfilScreen(usuario = usuario) }
+
+        // --Vistas de director--
+        composable(Pantalla.ReporteDirector.route) {
+            val viewModel: DirectorViewModel = viewModel()
+            ReporteAsistenciaScreen(
+                viewModel = viewModel,
+                onNavigateToSucursales = {
+                    navController.navigate(Pantalla.CoberturaDirector.route) {
+                        popUpTo(Pantalla.ReporteDirector.route) { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        composable(Pantalla.CoberturaDirector.route) {
+            val viewModel: DirectorViewModel = viewModel()
+            SucursalesScreen(
+                viewModel = viewModel,
+                onNavigateToReportes = {
+                    navController.navigate(Pantalla.ReporteDirector.route) {
+                        popUpTo(Pantalla.CoberturaDirector.route) { inclusive = true }
+                    }
+                }
+            )
+        }
+
+
     }
 }
