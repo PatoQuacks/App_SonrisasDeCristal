@@ -1,5 +1,6 @@
 package mx.tec.app_sonrisas.ui.components
 
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -15,7 +16,11 @@ import androidx.compose.runtime.Composable
 // por eso se necesita @OptIn.
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BarraSuperior(titulo: String, onAbrirMenu: () -> Unit) {
+fun BarraSuperior(
+    titulo: String,
+    onAbrirMenu: () -> Unit,
+    acciones: @Composable RowScope.() -> Unit = {},
+) {
     TopAppBar(
         title = { Text(titulo) },
         navigationIcon = {
@@ -23,6 +28,7 @@ fun BarraSuperior(titulo: String, onAbrirMenu: () -> Unit) {
                 Icon(Icons.Filled.Menu, contentDescription = "Abrir menú")
             }
         },
+        actions = acciones,
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = MaterialTheme.colorScheme.secondary,
             titleContentColor = MaterialTheme.colorScheme.onSecondary,

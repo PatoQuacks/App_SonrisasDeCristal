@@ -2,7 +2,10 @@ package mx.tec.app_sonrisas.ui.screens
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
 import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.Text
+import androidx.compose.ui.unit.dp
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.rememberDrawerState
@@ -45,7 +48,10 @@ fun PrincipalScreen(
     // Ruta de la pantalla visible. Se actualiza sola cada vez que navegamos.
     val entradaActual by navController.currentBackStackEntryAsState()
     val rutaActual = entradaActual?.destination?.route
-    val tituloActual = todasLasPantallas.find { it.route == rutaActual }?.titulo ?: ""
+    val tituloActual = when (rutaActual) {
+        Pantalla.Capacitaciones.route -> "Capacitaciones de sucursal"
+        else -> todasLasPantallas.find { it.route == rutaActual }?.titulo.orEmpty()
+    }
 
     // Si el menú está abierto, el botón "atrás" lo cierra en lugar de salir.
     BackHandler(enabled = drawerState.isOpen) {
@@ -73,6 +79,20 @@ fun PrincipalScreen(
                 BarraSuperior(
                     titulo = tituloActual,
                     onAbrirMenu = { scope.launch { drawerState.open() } },
+                    acciones = {
+                        if (rutaActual == Pantalla.Empleados.route) {
+                            Button(
+                                onClick = {
+                                    navController.navigate(Pantalla.Asistencia.route) {
+                                        launchSingleTop = true
+                                    }
+                                },
+                                modifier = Modifier.padding(end = 12.dp),
+                            ) {
+                                Text("Tomar Asistencia")
+                            }
+                        }
+                    },
                 )
             },
             bottomBar = {

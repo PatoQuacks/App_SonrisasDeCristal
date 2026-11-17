@@ -22,7 +22,9 @@ import mx.tec.app_sonrisas.ui.screens.lateral.SalasScreen
 import androidx.lifecycle.viewmodel.compose.viewModel
 import mx.tec.app_sonrisas.ui.screens.director.ReporteAsistenciaScreen
 import mx.tec.app_sonrisas.ui.screens.director.SucursalesScreen
+import mx.tec.app_sonrisas.ui.screens.navegarAPantalla
 import mx.tec.app_sonrisas.ui.viewmodel.DirectorViewModel
+import mx.tec.app_sonrisas.ui.viewmodel.PersonalViewModel
 
 
 // Navegación de NIVEL 2: las pantallas que viven dentro de la parte principal.
@@ -33,24 +35,79 @@ fun PrincipalNavHost(
     usuario: Usuario?,
     modifier: Modifier = Modifier,
 ) {
+    val personal: PersonalViewModel = viewModel()
+
     NavHost(
         navController = navController,
         startDestination = Pantalla.Inicio.route,
         modifier = modifier,
     ) {
         // Barra inferior
-        composable(Pantalla.Inicio.route) { InicioScreen() }
-        composable(Pantalla.Asistencia.route) { AsistenciaScreen() }
+        composable(Pantalla.Inicio.route) {
+            InicioScreen(
+                onVerAusencias = { navController.navegarAPantalla(Pantalla.Asistencia) },
+                onVerCapacitaciones = { navController.navegarAPantalla(Pantalla.Capacitaciones) },
+            )
+        }
+        composable(Pantalla.Asistencia.route) {
+            AsistenciaScreen(
+                empleados = personal.empleados,
+                asistenciaGuardada = personal.asistencia,
+                onCancelar = { navController.popBackStack() },
+                onGuardar = { registros ->
+                    personal.guardarAsistencia(registros)
+                    navController.popBackStack()
+                },
+            )
+        }
         composable(Pantalla.Capacitaciones.route) { CapacitacionesScreen() }
-        composable(Pantalla.Incidencias.route) { IncidenciasScreen() }
+        composable(Pantalla.Incidencias.route) {
+            IncidenciasScreen(
+                incidenciasGuardadas = personal.incidencias,
+                onCancelar = { navController.popBackStack() },
+                onGuardar = personal::guardarIncidencias,
+            )
+        }
 
         // Menú lateral
-        composable(Pantalla.Empleados.route) { EmpleadosScreen() }
-        composable(Pantalla.Coordinadores.route) { CoordinadoresScreen() }
+        composable(Pantalla.Empleados.route) {
+            EmpleadosScreen(
+                empleados = personal.empleados,
+                asistencia = personal.asistencia,
+            )
+        }
+        composable(Pantalla.Coordinadores.route) {
+            CoordinadoresScreen(
+                // navigate "normal": con el botón atrás se regresa a Coordinadores.
+                onVerPermisos = {
+                    navController.navigate(Pantalla.PermisosCoordinadores.route) {
+                        launchSingleTop = true
+                    }
+                },
+                onAsignar = {
+                    navController.navigate(Pantalla.AgregarEmpleado.route) {
+                        launchSingleTop = true
+                    }
+                },
+            )
+        }
         composable(Pantalla.Salas.route) { SalasScreen() }
-        composable(Pantalla.PermisosCoordinadores.route) { PermisosCoordinadoresScreen() }
-        composable(Pantalla.AgregarEmpleado.route) { AgregarEmpleadoScreen() }
-        composable(Pantalla.AgregarSala.route) { AgregarSalaScreen() }
+        composable(Pantalla.PermisosCoordinadores.route) {
+            PermisosCoordinadoresScreen(
+                onCancelar = { navController.navegarAPantalla(Pantalla.Coordinadores) },
+                onGuardar = { navController.navegarAPantalla(Pantalla.Coordinadores) },
+            )
+        }
+        composable(Pantalla.AgregarEmpleado.route) {
+            AgregarEmpleadoScreen(
+                onGuardar = { navController.navegarAPantalla(Pantalla.Empleados) },
+            )
+        }
+        composable(Pantalla.AgregarSala.route) {
+            AgregarSalaScreen(
+                onGuardar = { navController.navegarAPantalla(Pantalla.Salas) },
+            )
+        }
         composable(Pantalla.Configuracion.route) { ConfiguracionScreen() }
         composable(Pantalla.AcercaDe.route) { AcercaDeScreen() }
         composable(Pantalla.Perfil.route) { PerfilScreen(usuario = usuario) }
