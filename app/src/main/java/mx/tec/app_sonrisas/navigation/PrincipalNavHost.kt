@@ -24,6 +24,7 @@ import mx.tec.app_sonrisas.ui.screens.director.ReporteAsistenciaScreen
 import mx.tec.app_sonrisas.ui.screens.director.SucursalesScreen
 import mx.tec.app_sonrisas.ui.screens.navegarAPantalla
 import mx.tec.app_sonrisas.ui.viewmodel.DirectorViewModel
+import mx.tec.app_sonrisas.ui.viewmodel.PersonalViewModel
 
 
 // Navegación de NIVEL 2: las pantallas que viven dentro de la parte principal.
@@ -34,6 +35,8 @@ fun PrincipalNavHost(
     usuario: Usuario?,
     modifier: Modifier = Modifier,
 ) {
+    val personal: PersonalViewModel = viewModel()
+
     NavHost(
         navController = navController,
         startDestination = Pantalla.Inicio.route,
@@ -46,12 +49,33 @@ fun PrincipalNavHost(
                 onVerCapacitaciones = { navController.navegarAPantalla(Pantalla.Capacitaciones) },
             )
         }
-        composable(Pantalla.Asistencia.route) { AsistenciaScreen() }
+        composable(Pantalla.Asistencia.route) {
+            AsistenciaScreen(
+                empleados = personal.empleados,
+                asistenciaGuardada = personal.asistencia,
+                onCancelar = { navController.popBackStack() },
+                onGuardar = { registros ->
+                    personal.guardarAsistencia(registros)
+                    navController.popBackStack()
+                },
+            )
+        }
         composable(Pantalla.Capacitaciones.route) { CapacitacionesScreen() }
-        composable(Pantalla.Incidencias.route) { IncidenciasScreen() }
+        composable(Pantalla.Incidencias.route) {
+            IncidenciasScreen(
+                incidenciasGuardadas = personal.incidencias,
+                onCancelar = { navController.popBackStack() },
+                onGuardar = personal::guardarIncidencias,
+            )
+        }
 
         // Menú lateral
-        composable(Pantalla.Empleados.route) { EmpleadosScreen() }
+        composable(Pantalla.Empleados.route) {
+            EmpleadosScreen(
+                empleados = personal.empleados,
+                asistencia = personal.asistencia,
+            )
+        }
         composable(Pantalla.Coordinadores.route) {
             CoordinadoresScreen(
                 // navigate "normal": con el botón atrás se regresa a Coordinadores.
