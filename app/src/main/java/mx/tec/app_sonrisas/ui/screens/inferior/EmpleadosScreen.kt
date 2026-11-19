@@ -36,12 +36,14 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import mx.tec.app_sonrisas.data.model.Employee
 import mx.tec.app_sonrisas.ui.viewmodel.EstadoAsistencia
 import mx.tec.app_sonrisas.ui.viewmodel.RegistroAsistencia
 
 @Composable
 fun EmpleadosScreen(
-    empleados: List<Int>,
+    empleados: List<Employee>,
+    nombresRoles: Map<Int, String>,
     asistencia: Map<Int, RegistroAsistencia>,
 ) {
     var empleadoExpandido by rememberSaveable { mutableStateOf<Int?>(null) }
@@ -52,9 +54,12 @@ fun EmpleadosScreen(
             .background(MaterialTheme.colorScheme.surface),
     ) {
         LazyColumn(modifier = Modifier.fillMaxWidth().weight(1f)) {
-            items(empleados, key = { it }) { empleadoId ->
+            items(empleados, key = { it.id }) { empleado ->
+                val empleadoId = empleado.id
                 val expandido = empleadoExpandido == empleadoId
                 FilaEmpleado(
+                    empleado = empleado,
+                    puesto = nombresRoles[empleado.roleId] ?: "Sin rol asignado",
                     registro = asistencia[empleadoId],
                     expandido = expandido,
                     onAlternar = {
@@ -68,6 +73,8 @@ fun EmpleadosScreen(
 
 @Composable
 private fun FilaEmpleado(
+    empleado: Employee,
+    puesto: String,
     registro: RegistroAsistencia?,
     expandido: Boolean,
     onAlternar: () -> Unit,
@@ -91,7 +98,7 @@ private fun FilaEmpleado(
         )
         Spacer(Modifier.width(8.dp))
         Text(
-            text = "Nombre de Empleado (Puesto)",
+            text = "${empleado.name} ($puesto)",
             style = MaterialTheme.typography.bodyLarge,
             fontWeight = FontWeight.SemiBold,
         )

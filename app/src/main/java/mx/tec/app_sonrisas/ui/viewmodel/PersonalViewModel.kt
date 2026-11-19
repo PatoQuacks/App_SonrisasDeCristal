@@ -4,6 +4,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import mx.tec.app_sonrisas.data.model.Employee
+import mx.tec.app_sonrisas.data.repository.EmpleadoRepository
+import java.time.LocalDate
 
 enum class EstadoAsistencia(val letra: String, val etiqueta: String) {
     Presente("P", "Presente"),
@@ -20,10 +23,20 @@ data class RegistroIncidencia(
     val id: Int,
     val tipo: String = "",
     val descripcion: String = "",
-)
+    val empleadoId: Int? = null,
+    val fecha: LocalDate? = null,
+) {
+    val tieneDatos: Boolean
+        get() = tipo.isNotEmpty() || descripcion.isNotBlank() || empleadoId != null || fecha != null
+}
 
-class PersonalViewModel : ViewModel() {
-    val empleados = (1..10).toList()
+class PersonalViewModel(
+    private val repository: EmpleadoRepository = EmpleadoRepository(),
+) : ViewModel() {
+    var empleados: List<Employee> by mutableStateOf(repository.getEmpleados())
+        private set
+
+    val nombresRoles = repository.getNombresRoles()
 
     var asistencia by mutableStateOf(
         mapOf(

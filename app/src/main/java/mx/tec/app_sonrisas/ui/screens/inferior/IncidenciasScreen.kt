@@ -1,5 +1,6 @@
 package mx.tec.app_sonrisas.ui.screens.inferior
 
+import android.app.DatePickerDialog
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -23,6 +24,7 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
@@ -40,8 +42,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import mx.tec.app_sonrisas.data.model.Employee
 import mx.tec.app_sonrisas.ui.components.EncabezadoPantalla
 import mx.tec.app_sonrisas.ui.viewmodel.RegistroIncidencia
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+
+private val formatoFechaIncidente = DateTimeFormatter.ofPattern("dd/MM/yyyy")
 
 private val tiposIncidente = listOf(
     "Personal de Sucursal",
@@ -53,6 +60,7 @@ private val tiposIncidente = listOf(
 
 @Composable
 fun IncidenciasScreen(
+    empleados: List<Employee>,
     incidenciasGuardadas: List<RegistroIncidencia>,
     onCancelar: () -> Unit,
     onGuardar: (List<RegistroIncidencia>) -> Unit,
@@ -79,8 +87,11 @@ fun IncidenciasScreen(
             }
             Button(
                 onClick = {
-                    val registros = borrador.filter { it.tipo.isNotEmpty() || it.descripcion.isNotBlank() }
-                    mostrarErrores = registros.any { it.tipo.isEmpty() || it.descripcion.isBlank() }
+                    val registros = borrador.filter { it.tieneDatos }
+                    mostrarErrores = registros.any {
+                        it.tipo.isEmpty() || it.descripcion.isBlank() ||
+                            it.empleadoId == null || it.fecha == null
+                    }
                     if (!mostrarErrores) {
                         onGuardar(registros.map { it.copy(descripcion = it.descripcion.trim()) })
                         Toast.makeText(contexto, "Cambios guardados", Toast.LENGTH_SHORT).show()
@@ -111,7 +122,8 @@ fun IncidenciasScreen(
                 key(incidente.id) {
                     FilaIncidente(
                         incidente = incidente,
-                        mostrarErrores = mostrarErrores,
+                        empleados = empleados,
+                        mostrarErrores = mostrarErrores && incidente.tieneDatos,
                         onCambio = { actualizado ->
                             borrador = borrador.map { if (it.id == actualizado.id) actualizado else it }
                         },
@@ -137,11 +149,15 @@ fun IncidenciasScreen(
 @Composable
 private fun FilaIncidente(
     incidente: RegistroIncidencia,
+    empleados: List<Employee>,
     mostrarErrores: Boolean,
     onCambio: (RegistroIncidencia) -> Unit,
     onEliminar: () -> Unit,
 ) {
     var menuAbierto by remember { mutableStateOf(false) }
+    var menuEmpleadosAbierto by remember { mutableStateOf(false) }
+    val contexto = LocalContext.current
+    val empleado = empleados.find { it.id == incidente.empleadoId }
     val colores = MaterialTheme.colorScheme
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -176,7 +192,7 @@ private fun FilaIncidente(
                         }
                     }
                 }
-                if (mostrarErrores && incidente.tipo.isEmpty() && incidente.descripcion.isNotBlank()) {
+                if (mostrarErrores && incidente.tipo.isEmpty()) {
                     Text("Elija un tipo", color = colores.error, style = MaterialTheme.typography.bodySmall)
                 }
             }
@@ -193,7 +209,7 @@ private fun FilaIncidente(
             }
         }
         Column(Modifier.weight(0.56f)) {
-            val faltaDescripcion = mostrarErrores && incidente.tipo.isNotEmpty() && incidente.descripcion.isBlank()
+            val faltaDescripcion = mostrarErrores && incidente.descripcion.isBlank()
             OutlinedTextField(
                 value = incidente.descripcion,
                 onValueChange = { onCambio(incidente.copy(descripcion = it)) },
@@ -210,6 +226,65 @@ private fun FilaIncidente(
             if (faltaDescripcion) {
                 Text("Escriba una descripción", color = colores.error, style = MaterialTheme.typography.bodySmall)
             }
+        }
+    }
+
+    Column(Modifier.fillMaxWidth().padding(top = 12.dp)) {
+        Text("Empleado involucrado", style = MaterialTheme.typography.titleSmall)
+        Box {
+            OutlinedButton(
+                onClick = { menuEmpleadosAbierto = true },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = empleados.isNotEmpty(),
+            ) {
+                Text(
+                    empleado?.let { "${it.name} (#${it.id})" }
+                        ?: incidente.empleadoId?.let { "Empleado #$it" }
+                        ?: "Seleccionar empleado",
+                )
+                Icon(Icons.Filled.KeyboardArrowDown, contentDescription = null)
+            }
+            DropdownMenu(
+                expanded = menuEmpleadosAbierto,
+                onDismissRequest = { menuEmpleadosAbierto = false },
+            ) {
+                empleados.forEach { opcion ->
+                    DropdownMenuItem(
+                        text = { Text("${opcion.name} (#${opcion.id})") },
+                        onClick = {
+                            onCambio(incidente.copy(empleadoId = opcion.id))
+                            menuEmpleadosAbierto = false
+                        },
+                    )
+                }
+            }
+        }
+        if (empleados.isEmpty()) {
+            Text("No hay empleados disponibles", style = MaterialTheme.typography.bodySmall)
+        } else if (mostrarErrores && incidente.empleadoId == null) {
+            Text("Selecciona un empleado", color = colores.error, style = MaterialTheme.typography.bodySmall)
+        }
+
+        Text("Fecha", modifier = Modifier.padding(top = 8.dp), style = MaterialTheme.typography.titleSmall)
+        OutlinedButton(
+            onClick = {
+                val fechaInicial = incidente.fecha ?: LocalDate.now()
+                DatePickerDialog(
+                    contexto,
+                    { _, anio, mes, dia ->
+                        onCambio(incidente.copy(fecha = LocalDate.of(anio, mes + 1, dia)))
+                    },
+                    fechaInicial.year,
+                    fechaInicial.monthValue - 1,
+                    fechaInicial.dayOfMonth,
+                ).show()
+            },
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(incidente.fecha?.format(formatoFechaIncidente) ?: "Seleccionar fecha")
+        }
+        if (mostrarErrores && incidente.fecha == null) {
+            Text("Selecciona una fecha", color = colores.error, style = MaterialTheme.typography.bodySmall)
         }
     }
 }

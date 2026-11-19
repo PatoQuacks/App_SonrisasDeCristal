@@ -34,6 +34,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import mx.tec.app_sonrisas.ui.components.EncabezadoPantalla
+import mx.tec.app_sonrisas.data.model.Employee
 import mx.tec.app_sonrisas.ui.viewmodel.EstadoAsistencia
 import mx.tec.app_sonrisas.ui.viewmodel.RegistroAsistencia
 
@@ -42,7 +43,8 @@ private val anchoColumna = 48.dp
 
 @Composable
 fun AsistenciaScreen(
-    empleados: List<Int>,
+    empleados: List<Employee>,
+    nombresRoles: Map<Int, String>,
     asistenciaGuardada: Map<Int, RegistroAsistencia>,
     onCancelar: () -> Unit,
     onGuardar: (Map<Int, RegistroAsistencia>) -> Unit,
@@ -69,7 +71,7 @@ fun AsistenciaScreen(
 
         Button(
             onClick = {
-                borrador = empleados.associateWith { RegistroAsistencia(EstadoAsistencia.Presente) }
+                borrador = empleados.associate { it.id to RegistroAsistencia(EstadoAsistencia.Presente) }
             },
             modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 8.dp),
             colors = ButtonDefaults.buttonColors(
@@ -105,7 +107,8 @@ fun AsistenciaScreen(
         }
 
         LazyColumn(Modifier.fillMaxWidth().weight(1f)) {
-            items(empleados, key = { it }) { empleadoId ->
+            items(empleados, key = { it.id }) { empleado ->
+                val empleadoId = empleado.id
                 val registro = borrador[empleadoId]
                 Row(
                     modifier = Modifier.fillMaxWidth().heightIn(min = 66.dp)
@@ -113,7 +116,7 @@ fun AsistenciaScreen(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
-                        text = "Nombre de Empleado\n(Puesto)",
+                        text = "${empleado.name}\n(${nombresRoles[empleado.roleId] ?: "Sin rol asignado"})",
                         modifier = Modifier.weight(1f),
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.Medium,

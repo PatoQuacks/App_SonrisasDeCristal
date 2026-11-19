@@ -52,6 +52,7 @@ fun PrincipalNavHost(
         composable(Pantalla.Asistencia.route) {
             AsistenciaScreen(
                 empleados = personal.empleados,
+                nombresRoles = personal.nombresRoles,
                 asistenciaGuardada = personal.asistencia,
                 onCancelar = { navController.popBackStack() },
                 onGuardar = { registros ->
@@ -63,6 +64,7 @@ fun PrincipalNavHost(
         composable(Pantalla.Capacitaciones.route) { CapacitacionesScreen() }
         composable(Pantalla.Incidencias.route) {
             IncidenciasScreen(
+                empleados = personal.empleados,
                 incidenciasGuardadas = personal.incidencias,
                 onCancelar = { navController.popBackStack() },
                 onGuardar = personal::guardarIncidencias,
@@ -73,6 +75,7 @@ fun PrincipalNavHost(
         composable(Pantalla.Empleados.route) {
             EmpleadosScreen(
                 empleados = personal.empleados,
+                nombresRoles = personal.nombresRoles,
                 asistencia = personal.asistencia,
             )
         }
