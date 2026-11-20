@@ -11,7 +11,9 @@ import mx.tec.app_sonrisas.ui.screens.inferior.EmpleadosScreen
 import mx.tec.app_sonrisas.ui.screens.inferior.IncidenciasScreen
 import mx.tec.app_sonrisas.ui.screens.inferior.InicioScreen
 import mx.tec.app_sonrisas.ui.screens.inferior.PerfilScreen
+import mx.tec.app_sonrisas.ui.screens.inferior.SalidasScreen
 import mx.tec.app_sonrisas.ui.screens.lateral.AcercaDeScreen
+import mx.tec.app_sonrisas.ui.screens.lateral.AgregarCapacitacionScreen
 import mx.tec.app_sonrisas.ui.screens.lateral.AgregarEmpleadoScreen
 import mx.tec.app_sonrisas.ui.screens.lateral.AgregarSalaScreen
 import mx.tec.app_sonrisas.ui.screens.lateral.CapacitacionesScreen
@@ -25,6 +27,7 @@ import mx.tec.app_sonrisas.ui.screens.director.SucursalesScreen
 import mx.tec.app_sonrisas.ui.screens.navegarAPantalla
 import mx.tec.app_sonrisas.ui.viewmodel.DirectorViewModel
 import mx.tec.app_sonrisas.ui.viewmodel.PersonalViewModel
+import java.time.LocalDate
 
 
 // Navegación de NIVEL 2: las pantallas que viven dentro de la parte principal.
@@ -50,18 +53,48 @@ fun PrincipalNavHost(
             )
         }
         composable(Pantalla.Asistencia.route) {
+            val fecha = LocalDate.now()
             AsistenciaScreen(
                 empleados = personal.empleados,
                 nombresRoles = personal.nombresRoles,
-                asistenciaGuardada = personal.asistencia,
+                asistenciaGuardada = personal.asistenciaDelDia(fecha),
                 onCancelar = { navController.popBackStack() },
                 onGuardar = { registros ->
-                    personal.guardarAsistencia(registros)
+                    personal.guardarAsistencia(registros, fecha)
+                },
+                onAbrirSalidas = { cambios ->
+                    if (cambios != null) personal.guardarAsistencia(cambios, fecha)
+                    navController.navigate(Pantalla.Salidas.route) { launchSingleTop = true }
+                },
+            )
+        }
+        composable(Pantalla.Salidas.route) {
+            val fecha = LocalDate.now()
+            SalidasScreen(
+                fecha = fecha,
+                empleados = personal.empleadosConSalidaPendiente(fecha),
+                nombresRoles = personal.nombresRoles,
+                onCancelar = { navController.popBackStack() },
+                onGuardar = { marcados -> personal.guardarSalidas(fecha, marcados) },
+            )
+        }
+        composable(Pantalla.Capacitaciones.route) {
+            CapacitacionesScreen(
+                capacitacionesNuevas = personal.capacitaciones,
+                onAgregar = {
+                    navController.navigate(Pantalla.AgregarCapacitacion.route) { launchSingleTop = true }
+                },
+            )
+        }
+        composable(Pantalla.AgregarCapacitacion.route) {
+            AgregarCapacitacionScreen(
+                onCancelar = { navController.popBackStack() },
+                onGuardar = { nombre, fecha ->
+                    personal.agregarCapacitacion(nombre, fecha)
                     navController.popBackStack()
                 },
             )
         }
-        composable(Pantalla.Capacitaciones.route) { CapacitacionesScreen() }
         composable(Pantalla.Incidencias.route) {
             IncidenciasScreen(
                 empleados = personal.empleados,

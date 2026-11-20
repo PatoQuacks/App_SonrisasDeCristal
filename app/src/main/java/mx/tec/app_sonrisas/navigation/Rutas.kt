@@ -44,6 +44,10 @@ sealed class Pantalla(val route: String, val titulo: String, val icono: ImageVec
     data object Capacitaciones : Pantalla("capacitaciones", "Capacitaciones", Icons.Filled.DateRange)
     data object Incidencias : Pantalla("incidencias", "Incidencias", Icons.Filled.Warning)
 
+    // Se abre desde Asistencia.
+    data object Salidas : Pantalla("salidas", "Registrar salidas", Icons.Filled.CheckCircle)
+    data object AgregarCapacitacion : Pantalla("agregar_capacitacion", "Agregar capacitación", Icons.Filled.DateRange)
+
     // Menú lateral (navigation drawer)
     data object Empleados : Pantalla("empleados", "Empleados", Icons.Filled.AccountBox)
     data object AgregarEmpleado : Pantalla("agregar_empleados", "Agregar Empleados", Icons.Filled.AccountBox)
@@ -84,4 +88,5 @@ val pantallasMenuLateral = listOf(
 )
 
 // Se usa para encontrar el título de la pantalla actual.
-val todasLasPantallas = pantallasBarraInferior + pantallasMenuLateral
+val todasLasPantallas = pantallasBarraInferior + pantallasMenuLateral +
+    listOf(Pantalla.Salidas, Pantalla.AgregarCapacitacion)

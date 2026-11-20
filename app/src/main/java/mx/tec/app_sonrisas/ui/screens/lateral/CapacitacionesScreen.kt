@@ -14,6 +14,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -29,33 +30,48 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import mx.tec.app_sonrisas.data.model.Capacitacion
+import java.time.format.DateTimeFormatter
 
 private const val TOTAL_PERSONAL = 15
+private val formatoVencimiento = DateTimeFormatter.ofPattern("dd/MM/yyyy")
 
-private data class Capacitacion(
+private data class CapacitacionResumen(
     val nombre: String,
-    val fecha: String,
+    val detalleFecha: String,
     val capacitados: Int,
+    val totalPersonal: Int = TOTAL_PERSONAL,
 ) {
-    val completada: Boolean get() = capacitados == TOTAL_PERSONAL
+    val completada: Boolean get() = totalPersonal > 0 && capacitados == totalPersonal
     val avance: String
         get() {
             val estado = if (completada) "Completada" else "En progreso"
-            return "$capacitados/$TOTAL_PERSONAL capacitados · $estado"
+            return "$capacitados/$totalPersonal capacitados · $estado"
         }
 }
 
 private val capacitaciones = listOf(
-    Capacitacion("Primeros auxilios", "20 de octubre de 2026", 10),
-    Capacitacion("Protocolos de seguridad infantil", "24 de octubre de 2026", 8),
-    Capacitacion("Prevención de accidentes", "29 de octubre de 2026", 15),
-    Capacitacion("Higiene y cuidado infantil", "5 de noviembre de 2026", 6),
+    CapacitacionResumen("Primeros auxilios", "Fecha: 20 de octubre de 2026", 10),
+    CapacitacionResumen("Protocolos de seguridad infantil", "Fecha: 24 de octubre de 2026", 8),
+    CapacitacionResumen("Prevención de accidentes", "Fecha: 29 de octubre de 2026", 15),
+    CapacitacionResumen("Higiene y cuidado infantil", "Fecha: 5 de noviembre de 2026", 6),
 )
 
 @Composable
-fun CapacitacionesScreen() {
+fun CapacitacionesScreen(
+    capacitacionesNuevas: List<Capacitacion>,
+    onAgregar: () -> Unit,
+) {
     var seleccion by rememberSaveable { mutableStateOf<Int?>(null) }
     val colores = MaterialTheme.colorScheme
+    val listado = capacitacionesNuevas.map {
+        CapacitacionResumen(
+            nombre = it.nombre,
+            detalleFecha = "Vence el ${it.fechaVencimiento.format(formatoVencimiento)}",
+            capacitados = 0,
+            totalPersonal = it.empleadosAsignados.size,
+        )
+    } + capacitaciones
 
     Column(Modifier.fillMaxSize().background(colores.surface)) {
         Column(
@@ -67,21 +83,26 @@ fun CapacitacionesScreen() {
                 style = MaterialTheme.typography.bodySmall,
                 color = colores.onSurfaceVariant,
             )
-            capacitaciones.forEachIndexed { indice, capacitacion ->
+            Button(
+                onClick = onAgregar,
+                modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp),
+            ) {
+                Text("+ Agregar capacitación")
+            }
+            listado.forEachIndexed { indice, capacitacion ->
                 FilaCapacitacion(capacitacion, onVer = { seleccion = indice })
-                if (indice < capacitaciones.lastIndex) HorizontalDivider()
+                if (indice < listado.lastIndex) HorizontalDivider()
             }
         }
     }
 
-    seleccion?.let { indice ->
-        val capacitacion = capacitaciones[indice]
+    seleccion?.let(listado::getOrNull)?.let { capacitacion ->
         AlertDialog(
             onDismissRequest = { seleccion = null },
             title = { Text(capacitacion.nombre) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("Fecha: ${capacitacion.fecha}")
+                    Text(capacitacion.detalleFecha)
                     Text(capacitacion.avance)
                 }
             },
@@ -93,7 +114,7 @@ fun CapacitacionesScreen() {
 }
 
 @Composable
-private fun FilaCapacitacion(capacitacion: Capacitacion, onVer: () -> Unit) {
+private fun FilaCapacitacion(capacitacion: CapacitacionResumen, onVer: () -> Unit) {
     val colores = MaterialTheme.colorScheme
     val verde = if (isSystemInDarkTheme()) {
         Color(0xFF91D98D)
@@ -117,7 +138,7 @@ private fun FilaCapacitacion(capacitacion: Capacitacion, onVer: () -> Unit) {
                 fontWeight = FontWeight.SemiBold,
             )
             Text(
-                text = "Fecha: ${capacitacion.fecha}",
+                text = capacitacion.detalleFecha,
                 style = MaterialTheme.typography.bodyMedium,
                 color = colores.onSurfaceVariant,
             )
