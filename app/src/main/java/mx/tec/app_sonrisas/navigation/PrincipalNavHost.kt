@@ -42,7 +42,7 @@ fun PrincipalNavHost(
 
     NavHost(
         navController = navController,
-        startDestination = Pantalla.Inicio.route,
+        startDestination = destinoInicialPara(usuario),
         modifier = modifier,
     ) {
         // Barra inferior

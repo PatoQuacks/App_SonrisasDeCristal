@@ -1,6 +1,13 @@
 package mx.tec.app_sonrisas.navigation
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -12,13 +19,25 @@ import mx.tec.app_sonrisas.ui.viewmodel.SesionViewModel
 // Navegación de NIVEL 1: Login <-> Principal
 @Composable
 fun AppNavigation() {
-    val navController = rememberNavController()
-
     // Se crea ARRIBA del NavHost: un solo SesionViewModel para toda la app.
     // Así el token y el usuario siguen disponibles al pasar del login a la parte principal.
     val sesionViewModel: SesionViewModel = viewModel()
+    val estado by sesionViewModel.estado.collectAsState()
 
-    NavHost(navController = navController, startDestination = RutasApp.LOGIN) {
+    if (estado.verificandoSesion) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center,
+        ) {
+            CircularProgressIndicator()
+        }
+        return
+    }
+
+    val navController = rememberNavController()
+    val destinoInicial = if (estado.usuario != null) RutasApp.PRINCIPAL else RutasApp.LOGIN
+
+    NavHost(navController = navController, startDestination = destinoInicial) {
 
         composable(RutasApp.LOGIN) {
             LoginScreen(

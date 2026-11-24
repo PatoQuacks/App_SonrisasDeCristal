@@ -71,6 +71,8 @@ dependencies {
     // Muestra en Logcat cada petición y respuesta (filtro: okhttp)
     implementation(libs.okhttp.logging.interceptor)
 
+    implementation(libs.androidx.datastore.preferences)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

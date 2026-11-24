@@ -7,19 +7,22 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemColors
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import mx.tec.app_sonrisas.data.remote.Usuario
 import mx.tec.app_sonrisas.navigation.Pantalla
-import mx.tec.app_sonrisas.navigation.pantallasBarraInferior
+import mx.tec.app_sonrisas.navigation.obtenerBarraInferior
 
 // Bottom navigation: una opción por cada pantalla de pantallasBarraInferior.
 @Composable
 fun BarraInferior(
     rutaActual: String?,
+    usuario: Usuario?,
     onSeleccionar: (Pantalla) -> Unit,
 ) {
     NavigationBar(
         containerColor = MaterialTheme.colorScheme.secondary,
     ) {
-        pantallasBarraInferior.forEach { pantalla ->
+        val itemsBarra = obtenerBarraInferior(usuario)
+        itemsBarra.forEach { pantalla ->
             NavigationBarItem(
                 selected = rutaActual == pantalla.route,
                 onClick = { onSeleccionar(pantalla) },

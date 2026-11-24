@@ -18,18 +18,20 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import mx.tec.app_sonrisas.data.remote.Usuario
 import mx.tec.app_sonrisas.navigation.Pantalla
-import mx.tec.app_sonrisas.navigation.pantallasMenuLateral
+import mx.tec.app_sonrisas.navigation.obtenerMenuLateral
 
 // Navigation drawer: encabezado, una opción por pantalla y "Cerrar sesión" al final.
 @Composable
 fun MenuLateral(
     rutaActual: String?,
+    usuario: Usuario?,
     onSeleccionar: (Pantalla) -> Unit,
     onCerrarSesion: () -> Unit,
 ) {
     ModalDrawerSheet {
-        // Encabezado: aquí puedes mostrar los datos del usuario que inició sesión.
+        // Encabezado: muestra los datos del usuario que inició sesión.
         Column(modifier = Modifier.padding(24.dp)) {
             Icon(
                 imageVector = Icons.Filled.AccountCircle,
@@ -38,9 +40,9 @@ fun MenuLateral(
                 tint = MaterialTheme.colorScheme.primary,
             )
             Spacer(Modifier.height(8.dp))
-            Text("Usuario de prueba", style = MaterialTheme.typography.titleMedium)
+            Text(usuario?.rol ?: "Usuario de prueba", style = MaterialTheme.typography.titleMedium)
             Text(
-                "usuario@correo.com",
+                usuario?.correo ?: "usuario@correo.com",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -48,7 +50,8 @@ fun MenuLateral(
         HorizontalDivider()
         Spacer(Modifier.height(8.dp))
 
-        pantallasMenuLateral.forEach { pantalla ->
+        val opcionesMenu = obtenerMenuLateral(usuario)
+        opcionesMenu.forEach { pantalla ->
             NavigationDrawerItem(
                 icon = { Icon(pantalla.icono, contentDescription = null) },
                 label = { Text(pantalla.titulo) },
