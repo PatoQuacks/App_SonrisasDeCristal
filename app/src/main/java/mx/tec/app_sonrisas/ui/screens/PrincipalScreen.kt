@@ -63,6 +63,7 @@ fun PrincipalScreen(
         drawerContent = {
             MenuLateral(
                 rutaActual = rutaActual,
+                usuario = sesion.usuario,
                 onSeleccionar = { pantalla ->
                     scope.launch { drawerState.close() }
                     navController.navegarAPantalla(pantalla)
@@ -98,6 +99,7 @@ fun PrincipalScreen(
             bottomBar = {
                 BarraInferior(
                     rutaActual = rutaActual,
+                    usuario = sesion.usuario,
                     onSeleccionar = { pantalla ->
                         navController.navegarAPantalla(pantalla)
                     },
