@@ -17,9 +17,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import mx.tec.app_sonrisas.navigation.Pantalla
 
-// Contenido de relleno que usan todas las pantallas del cascarón.
-// Cuando construyas una pantalla real, borra la llamada a PantallaEjemplo
-// y pon tu propio contenido.
 @Composable
 fun PantallaEjemplo(pantalla: Pantalla, descripcion: String) {
     Column(
