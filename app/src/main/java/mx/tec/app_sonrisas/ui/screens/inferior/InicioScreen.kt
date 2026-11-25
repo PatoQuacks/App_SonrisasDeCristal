@@ -35,6 +35,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import mx.tec.app_sonrisas.ui.components.EncabezadoPantalla
 import mx.tec.app_sonrisas.ui.components.TituloSeccion
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 // Datos de ejemplo: todavía no hay base de datos.
 private const val PRESENTES = 16
@@ -43,20 +46,28 @@ private const val AUSENTES = 3
 
 private val ColorTardanza = Color(0xFF00B8F0)
 
+// Fecha en español, por ejemplo "Domingo 22 de noviembre".
+private val espanolMexico: Locale = Locale.forLanguageTag("es-MX")
+private val formatoFechaInicio = DateTimeFormatter.ofPattern("EEEE d 'de' MMMM", espanolMexico)
+
 // Vista general de la estancia para el responsable (pantalla principal después del login).
 @Composable
 fun InicioScreen(
+    nombreResponsable: String,
+    plantel: String,
     onVerAusencias: () -> Unit = {},
     onVerCapacitaciones: () -> Unit = {},
 ) {
     val contexto = LocalContext.current
-    val colorTexto = MaterialTheme.colorScheme.onPrimaryContainer
+    val fechaHoy = LocalDate.now()
+        .format(formatoFechaInicio)
+        .replaceFirstChar { it.titlecase(espanolMexico) }
     val colorPresente = MaterialTheme.colorScheme.secondary
     val colorAusente = MaterialTheme.colorScheme.primary
     val total = PRESENTES + TARDANZAS + AUSENTES
 
     Column(modifier = Modifier.fillMaxSize()) {
-        EncabezadoPantalla(texto = "Plantel A") {
+        EncabezadoPantalla(texto = plantel) {
             Button(
                 onClick = {
                     Toast.makeText(contexto, "Reporte descargado (demostración)", Toast.LENGTH_SHORT).show()
@@ -73,9 +84,9 @@ fun InicioScreen(
         ) {
             // Responsable y fecha
             Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-                DatoGeneral(etiqueta = "Responsable:", valor = "Carlos")
+                DatoGeneral(etiqueta = "Responsable:", valor = nombreResponsable)
                 HorizontalDivider()
-                DatoGeneral(etiqueta = "Fecha:", valor = "Lunes 12 de octubre")
+                DatoGeneral(etiqueta = "Fecha:", valor = fechaHoy)
                 HorizontalDivider()
             }
             Spacer(Modifier.height(8.dp))

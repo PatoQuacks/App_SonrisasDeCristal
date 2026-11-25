@@ -21,6 +21,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -29,7 +30,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 
 // Componentes compartidos por las pantallas del Responsable
@@ -78,13 +82,24 @@ fun TituloSeccion(texto: String) {
 }
 
 // Campo de texto con su etiqueta arriba, como en los formularios del diseño.
+// - error: si no es null, el campo se pinta en rojo y muestra el mensaje debajo.
+// - ayuda: texto gris debajo del campo (se reemplaza por el error cuando hay uno).
+// - esContrasena: oculta lo que se escribe y agrega el botón "Ver / Ocultar".
 @Composable
 fun CampoFormulario(
     etiqueta: String,
     valor: String,
     onCambio: (String) -> Unit,
     tipoTeclado: KeyboardType = KeyboardType.Text,
+    error: String? = null,
+    ayuda: String? = null,
+    esContrasena: Boolean = false,
+    capitalizacion: KeyboardCapitalization = KeyboardCapitalization.None,
+    habilitado: Boolean = true,
 ) {
+    var contrasenaVisible by remember { mutableStateOf(false) }
+    val mensaje = error ?: ayuda
+
     Column {
         Text(
             text = etiqueta,
@@ -96,20 +111,52 @@ fun CampoFormulario(
             value = valor,
             onValueChange = onCambio,
             singleLine = true,
+            enabled = habilitado,
+            isError = error != null,
             shape = RoundedCornerShape(8.dp),
-            keyboardOptions = KeyboardOptions(keyboardType = tipoTeclado),
+            keyboardOptions = KeyboardOptions(
+                keyboardType = if (esContrasena) KeyboardType.Password else tipoTeclado,
+                capitalization = capitalizacion,
+            ),
+            visualTransformation = if (esContrasena && !contrasenaVisible) {
+                PasswordVisualTransformation()
+            } else {
+                VisualTransformation.None
+            },
+            trailingIcon = if (esContrasena) {
+                {
+                    TextButton(
+                        onClick = { contrasenaVisible = !contrasenaVisible },
+                        enabled = habilitado,
+                    ) {
+                        Text(if (contrasenaVisible) "Ocultar" else "Ver")
+                    }
+                }
+            } else {
+                null
+            },
+            supportingText = if (mensaje != null) {
+                { Text(mensaje) }
+            } else {
+                null
+            },
             modifier = Modifier.fillMaxWidth(),
         )
     }
 }
 
 // Lista desplegable con su etiqueta arriba.
+// - seleccion vacía ("") muestra textoVacio en gris, para obligar a elegir una opción.
+// - error: si no es null, el campo se pinta en rojo y muestra el mensaje debajo.
 @Composable
 fun SelectorDesplegable(
     etiqueta: String,
     opciones: List<String>,
     seleccion: String,
     onSeleccion: (String) -> Unit,
+    error: String? = null,
+    textoVacio: String = "Selecciona una opción",
+    habilitado: Boolean = true,
 ) {
     var abierto by remember { mutableStateOf(false) }
 
@@ -126,9 +173,17 @@ fun SelectorDesplegable(
                 onValueChange = {},
                 readOnly = true,
                 singleLine = true,
+                enabled = habilitado,
+                isError = error != null,
+                placeholder = { Text(textoVacio) },
                 shape = RoundedCornerShape(8.dp),
                 trailingIcon = {
                     Icon(Icons.Filled.KeyboardArrowDown, contentDescription = "Abrir lista")
+                },
+                supportingText = if (error != null) {
+                    { Text(error) }
+                } else {
+                    null
                 },
                 modifier = Modifier.fillMaxWidth(),
             )
@@ -136,7 +191,7 @@ fun SelectorDesplegable(
             Box(
                 modifier = Modifier
                     .matchParentSize()
-                    .clickable { abierto = true }
+                    .clickable(enabled = habilitado) { abierto = true }
             )
             DropdownMenu(expanded = abierto, onDismissRequest = { abierto = false }) {
                 opciones.forEach { opcion ->

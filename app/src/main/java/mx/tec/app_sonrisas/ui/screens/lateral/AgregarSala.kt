@@ -24,18 +24,19 @@ import androidx.compose.ui.unit.dp
 import mx.tec.app_sonrisas.ui.components.CampoFormulario
 import mx.tec.app_sonrisas.ui.components.SelectorDesplegable
 
-// Datos de ejemplo: todavía no hay base de datos.
-private val coordinadores = listOf("Coordinador A", "Coordinador B", "Coordinador C")
-
 // Formulario para agregar una sala a la sucursal.
-// Por ahora "Guardar sala" solo valida, avisa y navega (no se guarda en ningún lado).
+// "Guardar sala" valida los datos y se los pasa a onGuardar, que la agrega a la lista de salas.
+// La lista de coordinadores es la misma que se ve en la pantalla de Coordinadores.
 @Composable
 fun AgregarSalaScreen(
-    onGuardar: () -> Unit = {},
+    coordinadores: List<String>,
+    // Regresa true si ya existe una sala con ese nombre (para no duplicarlas).
+    nombreRepetido: (String) -> Boolean = { false },
+    onGuardar: (nombre: String, personalMinimo: Int, coordinador: String) -> Unit = { _, _, _ -> },
 ) {
     val contexto = LocalContext.current
 
-    var coordinador by remember { mutableStateOf(coordinadores.first()) }
+    var coordinador by remember { mutableStateOf(coordinadores.firstOrNull().orEmpty()) }
     var nombre by remember { mutableStateOf("") }
     var personalMinimo by remember { mutableStateOf("") }
     var error by remember { mutableStateOf<String?>(null) }
@@ -62,8 +63,8 @@ fun AgregarSalaScreen(
         CampoFormulario(
             etiqueta = "Personal mínimo requerido",
             valor = personalMinimo,
-            // Solo se aceptan dígitos.
-            onCambio = { texto -> personalMinimo = texto.filter { it.isDigit() } },
+            // Solo se aceptan dígitos (máximo 3).
+            onCambio = { texto -> personalMinimo = texto.filter { it.isDigit() }.take(3) },
             tipoTeclado = KeyboardType.Number,
         )
         Spacer(Modifier.height(6.dp))
@@ -85,12 +86,17 @@ fun AgregarSalaScreen(
 
         Button(
             onClick = {
-                if (nombre.isBlank() || personalMinimo.isBlank()) {
+                val minimo = personalMinimo.toIntOrNull()
+                if (nombre.isBlank() || minimo == null) {
                     error = "Escribe el nombre de la sala y el personal mínimo"
+                } else if (minimo < 1) {
+                    error = "El personal mínimo debe ser de al menos 1 persona"
+                } else if (nombreRepetido(nombre)) {
+                    error = "Ya existe una sala llamada \"${nombre.trim()}\""
                 } else {
                     error = null
                     Toast.makeText(contexto, "Sala \"${nombre.trim()}\" guardada", Toast.LENGTH_SHORT).show()
-                    onGuardar()
+                    onGuardar(nombre.trim(), minimo, coordinador)
                 }
             },
             modifier = Modifier.fillMaxWidth(),

@@ -25,68 +25,38 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import mx.tec.app_sonrisas.ui.components.EncabezadoPantalla
-
-// Datos de ejemplo: todavía no hay base de datos.
-private data class CoordinadorEjemplo(
-    val nombre: String,
-    val area: String,
-    val empleadosACargo: Int,
-    val presentesHoy: Int,
-    val permisosActivos: Int,
-    val incidentes: List<String>,
-)
-
-private val coordinadoresEjemplo = listOf(
-    CoordinadorEjemplo(
-        nombre = "Patricio",
-        area = "Turno matutino",
-        empleadosACargo = 13,
-        presentesHoy = 12,
-        permisosActivos = 4,
-        incidentes = listOf(
-            "03 nov · Caída en el área de juegos",
-            "29 oct · Golpe leve durante una actividad",
-        ),
-    ),
-    CoordinadorEjemplo(
-        nombre = "Valeria Méndez",
-        area = "Turno vespertino",
-        empleadosACargo = 8,
-        presentesHoy = 6,
-        permisosActivos = 5,
-        incidentes = listOf("30 oct · Material dañado en la sala"),
-    ),
-    CoordinadorEjemplo(
-        nombre = "Ricardo Salinas",
-        area = "Cocina y servicios",
-        empleadosACargo = 5,
-        presentesHoy = 5,
-        permisosActivos = 3,
-        incidentes = emptyList(),
-    ),
-)
+import mx.tec.app_sonrisas.ui.viewmodel.Coordinador
 
 // Listado de coordinadores del responsable.
 // Cada renglón se abre o se cierra al tocarlo. El interruptor "Mostrar incidentes"
 // cambia entre las dos versiones del diseño (con y sin incidentes registrados).
+// "ver permisos" avisa cuál coordinador se tocó, para abrir SUS permisos.
 @Composable
 fun CoordinadoresScreen(
-    onVerPermisos: () -> Unit = {},
+    coordinadores: List<Coordinador>,
+    permisos: Map<String, Set<String>>,
+    totalPermisos: Int,
+    nombreResponsable: String,
+    plantel: String,
+    onVerPermisos: (String) -> Unit = {},
     onAsignar: () -> Unit = {},
 ) {
     // Nombres de los coordinadores cuyo detalle está abierto.
-    var abiertos by remember { mutableStateOf(setOf(coordinadoresEjemplo.first().nombre)) }
-    var mostrarIncidentes by remember { mutableStateOf(false) }
+    // rememberSaveable: no se cierran al girar el teléfono.
+    var abiertos by rememberSaveable {
+        mutableStateOf(setOfNotNull(coordinadores.firstOrNull()?.nombre))
+    }
+    var mostrarIncidentes by rememberSaveable { mutableStateOf(false) }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        EncabezadoPantalla(texto = "Diego · Responsable de Plantel A") {
+        EncabezadoPantalla(texto = "$nombreResponsable · Responsable de $plantel") {
             Button(onClick = onAsignar) { Text("+ Asignar") }
         }
 
@@ -112,10 +82,12 @@ fun CoordinadoresScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 16.dp),
         ) {
-            coordinadoresEjemplo.forEach { coordinador ->
+            coordinadores.forEach { coordinador ->
                 val abierto = coordinador.nombre in abiertos
                 CoordinadorItem(
                     coordinador = coordinador,
+                    permisosActivos = permisos[coordinador.nombre].orEmpty().size,
+                    totalPermisos = totalPermisos,
                     abierto = abierto,
                     mostrarIncidentes = mostrarIncidentes,
                     onAlternar = {
@@ -125,7 +97,7 @@ fun CoordinadoresScreen(
                             abiertos + coordinador.nombre
                         }
                     },
-                    onVerPermisos = onVerPermisos,
+                    onVerPermisos = { onVerPermisos(coordinador.nombre) },
                 )
                 HorizontalDivider()
             }
@@ -135,7 +107,9 @@ fun CoordinadoresScreen(
 
 @Composable
 private fun CoordinadorItem(
-    coordinador: CoordinadorEjemplo,
+    coordinador: Coordinador,
+    permisosActivos: Int,
+    totalPermisos: Int,
     abierto: Boolean,
     mostrarIncidentes: Boolean,
     onAlternar: () -> Unit,
@@ -192,7 +166,7 @@ private fun CoordinadorItem(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
-                        text = "Permisos: ${coordinador.permisosActivos} de 7 activos",
+                        text = "Permisos: $permisosActivos de $totalPermisos activos",
                         style = MaterialTheme.typography.bodyMedium,
                         color = colorTexto,
                         modifier = Modifier.weight(1f),

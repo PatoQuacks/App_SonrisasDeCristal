@@ -15,48 +15,38 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import mx.tec.app_sonrisas.ui.components.EncabezadoPantalla
 import mx.tec.app_sonrisas.ui.components.TituloSeccion
+import mx.tec.app_sonrisas.ui.viewmodel.Coordinador
 
-// Datos de ejemplo: grupos de permisos y si vienen activos o no.
-private val gruposDePermisos = listOf(
-    "Personal" to listOf(
-        "Ver listado de empleados" to true,
-        "Tomar asistencia" to true,
-        "Registrar incidencias" to true,
-        "Justificar faltas y retardos" to false,
-    ),
-    "Turnos" to listOf(
-        "Editar turnos de su equipo" to true,
-    ),
-    "Información" to listOf(
-        "Descargar reportes del día" to false,
-        "Ver datos personales" to false,
-    ),
-)
-
-// Permisos del coordinador seleccionado. Las casillas se pueden marcar y desmarcar;
-// por ahora los cambios solo viven en esta pantalla (todavía no hay base de datos).
+// Permisos del coordinador seleccionado en la pantalla de Coordinadores.
+// Las casillas trabajan sobre una copia: los cambios solo se aplican al tocar
+// "Guardar Cambios"; "Cancelar" los descarta.
 @Composable
 fun PermisosCoordinadoresScreen(
+    coordinador: Coordinador,
+    gruposDePermisos: List<Pair<String, List<String>>>,
+    permisosIniciales: Set<String>,
     onCancelar: () -> Unit = {},
-    onGuardar: () -> Unit = {},
+    onGuardar: (Set<String>) -> Unit = {},
 ) {
     val contexto = LocalContext.current
 
-    // permiso -> activo
-    val permisos = remember {
-        mutableStateMapOf<String, Boolean>().apply {
-            gruposDePermisos.forEach { (_, lista) -> putAll(lista) }
-        }
+    // Copia de trabajo. Se reinicia si cambia el coordinador.
+    var activos by remember(coordinador.nombre) { mutableStateOf(permisosIniciales) }
+    val totalPermisos = gruposDePermisos.sumOf { (_, lista) -> lista.size }
+
+    fun cambiarPermiso(permiso: String, activo: Boolean) {
+        activos = if (activo) activos + permiso else activos - permiso
     }
-    val activos = permisos.values.count { it }
 
     Column(modifier = Modifier.fillMaxSize()) {
         EncabezadoPantalla {
@@ -72,8 +62,12 @@ fun PermisosCoordinadoresScreen(
             }
             Button(
                 onClick = {
-                    Toast.makeText(contexto, "Permisos guardados", Toast.LENGTH_SHORT).show()
-                    onGuardar()
+                    Toast.makeText(
+                        contexto,
+                        "Permisos de ${coordinador.nombre} guardados",
+                        Toast.LENGTH_SHORT,
+                    ).show()
+                    onGuardar(activos)
                 },
                 modifier = Modifier.weight(1f),
             ) {
@@ -93,13 +87,13 @@ fun PermisosCoordinadoresScreen(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    text = "Patricio (Turno matutino)",
+                    text = "${coordinador.nombre} (${coordinador.area})",
                     style = MaterialTheme.typography.titleSmall,
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                     modifier = Modifier.weight(1f),
                 )
                 Text(
-                    text = "$activos de ${permisos.size} activos",
+                    text = "${activos.size} de $totalPermisos activos",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                 )
@@ -107,12 +101,12 @@ fun PermisosCoordinadoresScreen(
 
             gruposDePermisos.forEach { (grupo, lista) ->
                 TituloSeccion(grupo)
-                lista.forEach { (permiso, _) ->
-                    val activo = permisos[permiso] == true
+                lista.forEach { permiso ->
+                    val activo = permiso in activos
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { permisos[permiso] = !activo }
+                            .clickable { cambiarPermiso(permiso, !activo) }
                             .padding(start = 16.dp, end = 4.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
@@ -124,7 +118,7 @@ fun PermisosCoordinadoresScreen(
                         )
                         Checkbox(
                             checked = activo,
-                            onCheckedChange = { permisos[permiso] = it },
+                            onCheckedChange = { marcado -> cambiarPermiso(permiso, marcado) },
                         )
                     }
                 }

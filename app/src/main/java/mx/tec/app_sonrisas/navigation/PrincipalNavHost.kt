@@ -15,6 +15,7 @@ import mx.tec.app_sonrisas.ui.screens.inferior.SalidasScreen
 import mx.tec.app_sonrisas.ui.screens.lateral.AcercaDeScreen
 import mx.tec.app_sonrisas.ui.screens.lateral.AgregarCapacitacionScreen
 import mx.tec.app_sonrisas.ui.screens.lateral.AgregarEmpleadoScreen
+import mx.tec.app_sonrisas.ui.screens.lateral.AvisoEmpleadoAgregado
 import mx.tec.app_sonrisas.ui.screens.lateral.AgregarSalaScreen
 import mx.tec.app_sonrisas.ui.screens.lateral.CapacitacionesScreen
 import mx.tec.app_sonrisas.ui.screens.lateral.ConfiguracionScreen
@@ -25,8 +26,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import mx.tec.app_sonrisas.ui.screens.director.ReporteAsistenciaScreen
 import mx.tec.app_sonrisas.ui.screens.director.SucursalesScreen
 import mx.tec.app_sonrisas.ui.screens.navegarAPantalla
+import mx.tec.app_sonrisas.ui.screens.regresarA
 import mx.tec.app_sonrisas.ui.viewmodel.DirectorViewModel
 import mx.tec.app_sonrisas.ui.viewmodel.PersonalViewModel
+import mx.tec.app_sonrisas.ui.viewmodel.ResponsableViewModel
 import java.time.LocalDate
 
 
@@ -36,9 +39,12 @@ import java.time.LocalDate
 fun PrincipalNavHost(
     navController: NavHostController,
     usuario: Usuario?,
+    token: String?,
     modifier: Modifier = Modifier,
 ) {
     val personal: PersonalViewModel = viewModel()
+    // Datos compartidos por las pantallas del Responsable (coordinadores, permisos...).
+    val responsable: ResponsableViewModel = viewModel()
 
     NavHost(
         navController = navController,
@@ -48,6 +54,8 @@ fun PrincipalNavHost(
         // Barra inferior
         composable(Pantalla.Inicio.route) {
             InicioScreen(
+                nombreResponsable = responsable.nombreResponsable,
+                plantel = responsable.plantel,
                 onVerAusencias = { navController.navegarAPantalla(Pantalla.Asistencia) },
                 onVerCapacitaciones = { navController.navegarAPantalla(Pantalla.Capacitaciones) },
             )
@@ -110,12 +118,27 @@ fun PrincipalNavHost(
                 empleados = personal.empleados,
                 nombresRoles = personal.nombresRoles,
                 asistencia = personal.asistencia,
+                horarios = personal.horarios,
+                onEliminar = { empleado -> personal.eliminarEmpleado(empleado.id) },
             )
+            // Pop-up después de dar de alta a un empleado en "Agregar empleado".
+            personal.empleadoRecienAgregado?.let { nombre ->
+                AvisoEmpleadoAgregado(
+                    nombre = nombre,
+                    onCerrar = personal::avisoEmpleadoMostrado,
+                )
+            }
         }
         composable(Pantalla.Coordinadores.route) {
             CoordinadoresScreen(
+                coordinadores = responsable.coordinadores,
+                permisos = responsable.permisos,
+                totalPermisos = responsable.totalPermisos,
+                nombreResponsable = responsable.nombreResponsable,
+                plantel = responsable.plantel,
                 // navigate "normal": con el botón atrás se regresa a Coordinadores.
-                onVerPermisos = {
+                onVerPermisos = { nombre ->
+                    responsable.seleccionarCoordinador(nombre)
                     navController.navigate(Pantalla.PermisosCoordinadores.route) {
                         launchSingleTop = true
                     }
@@ -127,24 +150,71 @@ fun PrincipalNavHost(
                 },
             )
         }
-        composable(Pantalla.Salas.route) { SalasScreen() }
+        composable(Pantalla.Salas.route) {
+            SalasScreen(
+                salas = personal.salas,
+                empleados = personal.empleados,
+                plantel = responsable.plantel,
+            )
+        }
         composable(Pantalla.PermisosCoordinadores.route) {
+            val coordinador = responsable.coordinadorSeleccionado
             PermisosCoordinadoresScreen(
-                onCancelar = { navController.navegarAPantalla(Pantalla.Coordinadores) },
-                onGuardar = { navController.navegarAPantalla(Pantalla.Coordinadores) },
+                coordinador = coordinador,
+                gruposDePermisos = responsable.gruposDePermisos,
+                permisosIniciales = responsable.permisosDe(coordinador.nombre),
+                onCancelar = { navController.regresarA(Pantalla.Coordinadores) },
+                onGuardar = { activos ->
+                    responsable.guardarPermisos(coordinador.nombre, activos)
+                    navController.regresarA(Pantalla.Coordinadores)
+                },
             )
         }
         composable(Pantalla.AgregarEmpleado.route) {
             AgregarEmpleadoScreen(
-                onGuardar = { navController.navegarAPantalla(Pantalla.Empleados) },
+                token = token,
+                tiposDePersonal = personal.nombresRoles,
+                salas = personal.nombresSalas,
+                horarios = personal.horarios,
+                correosRegistrados = personal.correosRegistrados,
+                onCancelar = { navController.popBackStack() },
+                onEmpleadoAgregado = { nuevo ->
+                    personal.agregarEmpleado(nuevo)
+                    navController.regresarA(Pantalla.Empleados)
+                },
+                onAgregarSala = {
+                    navController.navigate(Pantalla.AgregarSala.route) { launchSingleTop = true }
+                },
             )
         }
         composable(Pantalla.AgregarSala.route) {
             AgregarSalaScreen(
-                onGuardar = { navController.navegarAPantalla(Pantalla.Salas) },
+                coordinadores = responsable.coordinadores.map { it.nombre },
+                nombreRepetido = personal::existeSala,
+                onGuardar = { nombre, personalMinimo, coordinador ->
+                    personal.agregarSala(nombre, personalMinimo, coordinador)
+                    // Si se abrió desde Agregar empleado, regresa ahí (la sala nueva ya aparece
+                    // en "Sala asignada"); si no, regresa a Salas.
+                    val anterior = navController.previousBackStackEntry?.destination?.route
+                    if (anterior == Pantalla.AgregarEmpleado.route) {
+                        navController.popBackStack()
+                    } else {
+                        navController.regresarA(Pantalla.Salas)
+                    }
+                },
             )
         }
-        composable(Pantalla.Configuracion.route) { ConfiguracionScreen() }
+        composable(Pantalla.Configuracion.route) {
+            // Perfil y Acerca de se abren desde aquí (ya no están en el menú lateral).
+            ConfiguracionScreen(
+                onVerPerfil = {
+                    navController.navigate(Pantalla.Perfil.route) { launchSingleTop = true }
+                },
+                onVerAcercaDe = {
+                    navController.navigate(Pantalla.AcercaDe.route) { launchSingleTop = true }
+                },
+            )
+        }
         composable(Pantalla.AcercaDe.route) { AcercaDeScreen() }
         composable(Pantalla.Perfil.route) { PerfilScreen(usuario = usuario) }
 

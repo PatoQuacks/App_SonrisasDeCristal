@@ -2,8 +2,12 @@ package mx.tec.app_sonrisas.ui.screens
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
 import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.ui.unit.dp
 import androidx.compose.material3.ModalNavigationDrawer
@@ -21,6 +25,8 @@ import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.launch
 import mx.tec.app_sonrisas.navigation.Pantalla
 import mx.tec.app_sonrisas.navigation.PrincipalNavHost
+import mx.tec.app_sonrisas.navigation.obtenerBarraInferior
+import mx.tec.app_sonrisas.navigation.seccionPadre
 import mx.tec.app_sonrisas.navigation.todasLasPantallas
 import mx.tec.app_sonrisas.ui.components.BarraInferior
 import mx.tec.app_sonrisas.ui.components.BarraSuperior
@@ -52,6 +58,28 @@ fun PrincipalScreen(
         Pantalla.Capacitaciones.route -> "Capacitaciones de sucursal"
         else -> todasLasPantallas.find { it.route == rutaActual }?.titulo.orEmpty()
     }
+    // Pestañas de la barra inferior de este usuario (dependen de su nivel, ver PermisosUsuario.kt).
+    val pestanas = obtenerBarraInferior(sesion.usuario)
+    // Si la pantalla actual vive dentro de otra (por ejemplo "Agregar empleado" dentro de
+    // Empleados), esta es su sección padre. Se usa para marcar el menú y la barra inferior.
+    // Una pantalla que es pestaña de la barra inferior (por ejemplo Perfil) no tiene padre.
+    val pantallaPadre = if (pestanas.any { it.route == rutaActual }) null else seccionPadre[rutaActual]
+    val rutaSeccion = pantallaPadre?.route ?: rutaActual
+
+    // Menú lateral y barra inferior: si ya estás dentro de esa sección, regresa a su
+    // pantalla principal; si no, cambia de sección conservando el estado de cada una.
+    fun irASeccion(pantalla: Pantalla) {
+        if (pantalla.route == rutaSeccion) {
+            navController.regresarA(pantalla)
+        } else {
+            navController.navegarAPantalla(pantalla)
+        }
+    }
+
+    // Abre una pantalla que vive dentro de la sección actual (con "atrás" se regresa).
+    fun abrir(pantalla: Pantalla) {
+        navController.navigate(pantalla.route) { launchSingleTop = true }
+    }
 
     // Si el menú está abierto, el botón "atrás" lo cierra en lugar de salir.
     BackHandler(enabled = drawerState.isOpen) {
@@ -62,11 +90,15 @@ fun PrincipalScreen(
         drawerState = drawerState,
         drawerContent = {
             MenuLateral(
-                rutaActual = rutaActual,
                 usuario = sesion.usuario,
+                rutaSeccion = rutaSeccion,
                 onSeleccionar = { pantalla ->
                     scope.launch { drawerState.close() }
-                    navController.navegarAPantalla(pantalla)
+                    irASeccion(pantalla)
+                },
+                onVerPerfil = {
+                    scope.launch { drawerState.close() }
+                    abrir(Pantalla.Perfil)
                 },
                 onCerrarSesion = {
                     scope.launch { drawerState.close() }
@@ -80,6 +112,12 @@ fun PrincipalScreen(
                 BarraSuperior(
                     titulo = tituloActual,
                     onAbrirMenu = { scope.launch { drawerState.open() } },
+                    // En pantallas internas se muestra la flecha para regresar.
+                    onRegresar = if (pantallaPadre != null) {
+                        { navController.navigateUp() }
+                    } else {
+                        null
+                    },
                     acciones = {
                         if (rutaActual == Pantalla.Empleados.route) {
                             Button(
@@ -98,17 +136,27 @@ fun PrincipalScreen(
             },
             bottomBar = {
                 BarraInferior(
-                    rutaActual = rutaActual,
+                    rutaActual = rutaSeccion,
                     usuario = sesion.usuario,
-                    onSeleccionar = { pantalla ->
-                        navController.navegarAPantalla(pantalla)
-                    },
+                    onSeleccionar = { pantalla -> irASeccion(pantalla) },
                 )
+            },
+            // Botón "+" de las secciones que permiten agregar algo.
+            floatingActionButton = {
+                when (rutaActual) {
+                    Pantalla.Empleados.route -> BotonAgregar("Agregar empleado") {
+                        abrir(Pantalla.AgregarEmpleado)
+                    }
+                    Pantalla.Salas.route -> BotonAgregar("Agregar sala") {
+                        abrir(Pantalla.AgregarSala)
+                    }
+                }
             },
         ) { innerPadding ->
             PrincipalNavHost(
                 navController = navController,
                 usuario = sesion.usuario,
+                token = sesion.token,
                 modifier = Modifier.padding(innerPadding),
             )
         }
@@ -125,4 +173,28 @@ fun NavController.navegarAPantalla(pantalla: Pantalla) {
         launchSingleTop = true
         restoreState = true
     }
+}
+
+// Para terminar un formulario (guardar o cancelar) y volver a su pantalla "padre".
+// - Si el padre está en la pila (se llegó desde ahí), simplemente regresa a él.
+// - Si no (el formulario se abrió desde el menú lateral), abre el padre desde cero.
+// No usa saveState/restoreState como navegarAPantalla: con esas opciones el formulario
+// se guardaba junto con su padre y "revivía" la siguiente vez que se abría esa sección.
+fun NavController.regresarA(pantalla: Pantalla) {
+    val regreso = popBackStack(pantalla.route, inclusive = false)
+    if (!regreso) {
+        navigate(pantalla.route) {
+            popUpTo(graph.findStartDestination().id)
+            launchSingleTop = true
+        }
+    }
+}
+
+@Composable
+private fun BotonAgregar(texto: String, onClick: () -> Unit) {
+    ExtendedFloatingActionButton(
+        text = { Text(texto) },
+        icon = { Icon(Icons.Filled.Add, contentDescription = null) },
+        onClick = onClick,
+    )
 }

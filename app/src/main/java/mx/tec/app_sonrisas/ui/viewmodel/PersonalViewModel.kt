@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import mx.tec.app_sonrisas.data.model.Capacitacion
 import mx.tec.app_sonrisas.data.model.Employee
+import mx.tec.app_sonrisas.data.model.Sala
 import mx.tec.app_sonrisas.data.repository.EmpleadoRepository
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -40,7 +41,78 @@ class PersonalViewModel(
     var empleados: List<Employee> by mutableStateOf(repository.getEmpleados())
         private set
 
+    // Último ID de empleado usado. Los IDs no se reutilizan al eliminar a alguien, para que
+    // un empleado nuevo no "herede" las incidencias o registros de uno que se dio de baja.
+    private var ultimoIdEmpleado = empleados.maxOfOrNull { it.id } ?: 0
+
     val nombresRoles = repository.getNombresRoles()
+    val horarios = repository.getHorarios()
+
+    // Salas de la sucursal. Solo aparecen las que se agregan con "Agregar sala".
+    var salas: List<Sala> by mutableStateOf(repository.getSalas())
+        private set
+
+    // id -> nombre, para la lista "Sala asignada" de Agregar empleado.
+    val nombresSalas: Map<Int, String>
+        get() = salas.associate { it.id to it.nombre }
+
+    fun existeSala(nombre: String): Boolean {
+        return salas.any { it.nombre.equals(nombre.trim(), ignoreCase = true) }
+    }
+
+    fun agregarSala(nombre: String, personalMinimo: Int, coordinador: String) {
+        salas = salas + Sala(
+            id = (salas.maxOfOrNull { it.id } ?: 0) + 1,
+            nombre = nombre.trim(),
+            personalMinimo = personalMinimo,
+            sucursalId = ID_SUCURSAL_SAN_PEDRO,
+            coordinadorEncargado = coordinador,
+        )
+    }
+
+    // Nombre del último empleado dado de alta; Empleados muestra el aviso mientras no sea null.
+    var empleadoRecienAgregado by mutableStateOf<String?>(null)
+        private set
+
+    // Correos ya usados (en minúsculas), para avisar si el usuario ya existe.
+    val correosRegistrados: Set<String>
+        get() = empleados.map { it.email.lowercase() }.toSet()
+
+    fun agregarEmpleado(nuevo: NuevoEmpleado) {
+        val empleado = Employee(
+            id = ++ultimoIdEmpleado,
+            subsidiaryId = ID_SUCURSAL_SAN_PEDRO,
+            roomId = nuevo.roomId,
+            roleId = nuevo.roleId,
+            scheduleId = nuevo.scheduleId,
+            name = nuevo.nombre,
+            email = nuevo.correo,
+        )
+        // Va al inicio de la lista para que se vea en cuanto se regresa a Empleados.
+        empleados = listOf(empleado) + empleados
+        // El ID del empleado se guarda también en su sala (Employee.room_id).
+        salas = salas.map { sala ->
+            if (sala.id == empleado.roomId) sala.copy(empleadosIds = sala.empleadosIds + empleado.id) else sala
+        }
+        empleadoRecienAgregado = nuevo.nombre
+    }
+
+    fun avisoEmpleadoMostrado() {
+        empleadoRecienAgregado = null
+    }
+
+    // Da de baja a un empleado: sale de la lista, de su sala, de la asistencia y salidas
+    // guardadas y de las capacitaciones asignadas. Sus incidencias se conservan como historial
+    // (Incidencias muestra "Empleado #id" cuando la persona ya no está en la lista).
+    fun eliminarEmpleado(id: Int) {
+        empleados = empleados.filterNot { it.id == id }
+        salas = salas.map { sala ->
+            if (id in sala.empleadosIds) sala.copy(empleadosIds = sala.empleadosIds - id) else sala
+        }
+        asistenciasPorFecha = asistenciasPorFecha.mapValues { (_, registros) -> registros - id }
+        salidasPorFecha = salidasPorFecha.mapValues { (_, salidas) -> salidas - id }
+        capacitaciones = capacitaciones.map { it.copy(empleadosAsignados = it.empleadosAsignados - id) }
+    }
 
     var capacitaciones by mutableStateOf(emptyList<Capacitacion>())
         private set
