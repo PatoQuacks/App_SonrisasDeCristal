@@ -8,6 +8,7 @@ import mx.tec.app_sonrisas.data.model.Capacitacion
 import mx.tec.app_sonrisas.data.model.Employee
 import mx.tec.app_sonrisas.data.model.Sala
 import mx.tec.app_sonrisas.data.repository.EmpleadoRepository
+import mx.tec.app_sonrisas.navigation.NivelUsuario
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -46,6 +47,7 @@ class PersonalViewModel(
     private var ultimoIdEmpleado = empleados.maxOfOrNull { it.id } ?: 0
 
     val nombresRoles = repository.getNombresRoles()
+    val tiposDePersonal = repository.getTiposDePersonal()
     val horarios = repository.getHorarios()
 
     // Salas de la sucursal. Solo aparecen las que se agregan con "Agregar sala".
@@ -83,10 +85,12 @@ class PersonalViewModel(
             id = ++ultimoIdEmpleado,
             subsidiaryId = ID_SUCURSAL_SAN_PEDRO,
             roomId = nuevo.roomId,
-            roleId = nuevo.roleId,
+            // Quien se da de alta en "Agregar empleado" tiene el rol de empleado.
+            roleId = NivelUsuario.EMPLEADO,
             scheduleId = nuevo.scheduleId,
             name = nuevo.nombre,
             email = nuevo.correo,
+            occupation = nuevo.ocupacion,
         )
         // Va al inicio de la lista para que se vea en cuanto se regresa a Empleados.
         empleados = listOf(empleado) + empleados

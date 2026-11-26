@@ -4,6 +4,7 @@ import mx.tec.app_sonrisas.data.model.Employee
 import mx.tec.app_sonrisas.data.model.Sala
 import mx.tec.app_sonrisas.data.remote.ApiService
 import mx.tec.app_sonrisas.data.remote.RetrofitClient
+import mx.tec.app_sonrisas.navigation.NivelUsuario
 import retrofit2.HttpException
 
 class EmpleadoRepository(
@@ -11,30 +12,38 @@ class EmpleadoRepository(
 ) {
     // Datos de demostración. Los IDs y correos no corresponden al servidor.
     fun getEmpleados(): List<Employee> {
+        val tipos = getTiposDePersonal()
         return (1..10).map { id ->
             Employee(
                 id = id,
                 subsidiaryId = 1,
                 // Sin sala asignada: la sucursal empieza sin salas.
                 roomId = null,
-                roleId = 1,
+                roleId = NivelUsuario.EMPLEADO,
                 scheduleId = 1,
                 name = "Nombre de Empleado",
                 email = "empleado$id@example.com",
+                occupation = tipos[(id - 1) % tipos.size],
             )
         }
     }
 
     // Catálogos provisionales (id -> nombre). Sus IDs deben coincidir con los de la base de datos.
 
-    // role_id: tipo de personal.
+    // role_id: los 4 roles principales. Son los mismos números de NivelUsuario
+    // (PermisosUsuario.kt), que decide qué pantallas ve cada quien.
     fun getNombresRoles(): Map<Int, String> {
         return mapOf(
-            1 to "Asistente",
-            2 to "Educadora",
-            3 to "Cocina",
-            4 to "Servicios",
+            NivelUsuario.DIRECTOR to "Director",
+            NivelUsuario.RESPONSABLE to "Responsable",
+            NivelUsuario.COORDINADOR to "Coordinador",
+            NivelUsuario.EMPLEADO to "Empleado",
         )
+    }
+
+    // Tipos de personal (Employee.occupation): lista fija de opciones por ahora.
+    fun getTiposDePersonal(): List<String> {
+        return listOf("Asistente", "Educadora", "Cocina", "Servicios")
     }
 
     // room_id: salas de la sucursal. Empieza vacía: solo aparecen las que se agregan

@@ -46,6 +46,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import mx.tec.app_sonrisas.data.model.Employee
+import mx.tec.app_sonrisas.data.model.puesto
 import mx.tec.app_sonrisas.ui.viewmodel.EstadoAsistencia
 import mx.tec.app_sonrisas.ui.viewmodel.RegistroAsistencia
 
@@ -78,7 +79,7 @@ fun EmpleadosScreen(
                 val expandido = empleadoExpandido == empleadoId
                 FilaEmpleado(
                     empleado = empleado,
-                    puesto = nombresRoles[empleado.roleId] ?: "Sin rol asignado",
+                    puesto = empleado.puesto(nombresRoles),
                     turno = horarios[empleado.scheduleId] ?: "Sin turno asignado",
                     registro = asistencia[empleadoId],
                     expandido = expandido,
@@ -96,7 +97,7 @@ fun EmpleadosScreen(
     if (empleadoPorEliminar != null) {
         ConfirmarEliminarEmpleado(
             empleado = empleadoPorEliminar,
-            puesto = nombresRoles[empleadoPorEliminar.roleId] ?: "Sin rol asignado",
+            puesto = empleadoPorEliminar.puesto(nombresRoles),
             onConfirmar = {
                 if (empleadoExpandido == empleadoPorEliminar.id) empleadoExpandido = null
                 idPorEliminar = null

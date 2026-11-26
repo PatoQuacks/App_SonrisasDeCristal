@@ -14,4 +14,13 @@ data class Employee(
     @SerialName("schedule_id") val scheduleId: Int?,
     val name: String,
     val email: String,
+    // Tipo de trabajo que hace el empleado (Asistente, Educadora, Cocina...).
+    // Es null para director, responsable y coordinador: ellos no tienen esta etiqueta.
+    val occupation: String? = null,
 )
+
+// Lo que se muestra entre paréntesis junto al nombre: su tipo de personal si lo tiene;
+// si no (director, responsable, coordinador), el nombre de su rol.
+fun Employee.puesto(nombresRoles: Map<Int, String>): String =
+    occupation ?: nombresRoles[roleId] ?: "Sin puesto asignado"
+

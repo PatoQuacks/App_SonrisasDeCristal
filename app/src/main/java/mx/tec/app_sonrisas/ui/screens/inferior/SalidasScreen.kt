@@ -28,6 +28,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import mx.tec.app_sonrisas.data.model.Employee
+import mx.tec.app_sonrisas.data.model.puesto
 import mx.tec.app_sonrisas.ui.components.EncabezadoPantalla
 import java.time.LocalDate
 
@@ -96,7 +97,7 @@ fun SalidasScreen(
             LazyColumn(Modifier.fillMaxWidth().weight(1f)) {
                 items(empleados, key = { it.id }) { empleado ->
                     val nombre = "${empleado.name} (#${empleado.id})"
-                    val rol = nombresRoles[empleado.roleId] ?: "Sin rol asignado"
+                    val rol = empleado.puesto(nombresRoles)
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically,

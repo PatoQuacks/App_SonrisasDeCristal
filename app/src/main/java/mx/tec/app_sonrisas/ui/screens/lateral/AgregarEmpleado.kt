@@ -54,7 +54,7 @@ private val formatoCorreo = Regex("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{
 @Composable
 fun AgregarEmpleadoScreen(
     token: String?,
-    tiposDePersonal: Map<Int, String>,
+    tiposDePersonal: List<String>,
     salas: Map<Int, String>,
     horarios: Map<Int, String>,
     correosRegistrados: Set<String>,
@@ -66,7 +66,7 @@ fun AgregarEmpleadoScreen(
 ) {
     // Datos del empleado (rememberSaveable: no se pierden al girar el teléfono).
     var nombre by rememberSaveable { mutableStateOf("") }
-    var tipoId by rememberSaveable { mutableStateOf<Int?>(null) }
+    var tipo by rememberSaveable { mutableStateOf<String?>(null) }
     var salaId by rememberSaveable { mutableStateOf<Int?>(null) }
     var horarioId by rememberSaveable { mutableStateOf<Int?>(null) }
 
@@ -80,7 +80,7 @@ fun AgregarEmpleadoScreen(
     var mostrarErrores by rememberSaveable { mutableStateOf(false) }
 
     val errorNombre = if (nombre.isBlank()) "Escribe el nombre completo" else null
-    val errorTipo = if (tipoId == null) "Elige el tipo de personal" else null
+    val errorTipo = if (tipo == null) "Elige el tipo de personal" else null
     val errorSala = if (salaId == null) "Elige la sala" else null
     val errorHorario = if (horarioId == null) "Elige el turno" else null
     val errorCorreo = when {
@@ -139,9 +139,9 @@ fun AgregarEmpleadoScreen(
             )
             SelectorDesplegable(
                 etiqueta = "Tipo de personal",
-                opciones = tiposDePersonal.values.toList(),
-                seleccion = tipoId?.let { tiposDePersonal[it] }.orEmpty(),
-                onSeleccion = { tipoId = tiposDePersonal.idDe(it) },
+                opciones = tiposDePersonal,
+                seleccion = tipo.orEmpty(),
+                onSeleccion = { tipo = it },
                 error = errorTipo.siSeMuestra(mostrarErrores),
                 habilitado = habilitado,
             )
@@ -227,7 +227,7 @@ fun AgregarEmpleadoScreen(
                             nuevo = NuevoEmpleado(
                                 nombre = nombre.trim(),
                                 correo = correo.lowercase(),
-                                roleId = tipoId!!,
+                                ocupacion = tipo!!,
                                 roomId = salaId!!,
                                 scheduleId = horarioId!!,
                             ),

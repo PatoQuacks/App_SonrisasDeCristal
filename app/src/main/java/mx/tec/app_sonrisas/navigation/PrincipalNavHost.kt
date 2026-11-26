@@ -173,7 +173,7 @@ fun PrincipalNavHost(
         composable(Pantalla.AgregarEmpleado.route) {
             AgregarEmpleadoScreen(
                 token = token,
-                tiposDePersonal = personal.nombresRoles,
+                tiposDePersonal = personal.tiposDePersonal,
                 salas = personal.nombresSalas,
                 horarios = personal.horarios,
                 correosRegistrados = personal.correosRegistrados,

@@ -42,6 +42,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import mx.tec.app_sonrisas.ui.components.EncabezadoPantalla
 import mx.tec.app_sonrisas.data.model.Employee
+import mx.tec.app_sonrisas.data.model.puesto
 import mx.tec.app_sonrisas.ui.viewmodel.EstadoAsistencia
 import mx.tec.app_sonrisas.ui.viewmodel.RegistroAsistencia
 
@@ -150,7 +151,7 @@ fun AsistenciaScreen(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
-                        text = "${empleado.name}\n(${nombresRoles[empleado.roleId] ?: "Sin rol asignado"})",
+                        text = "${empleado.name}\n(${empleado.puesto(nombresRoles)})",
                         modifier = Modifier.weight(1f),
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.Medium,

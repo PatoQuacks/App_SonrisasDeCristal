@@ -67,7 +67,7 @@ fun PrincipalScreen(
     val rutaSeccion = pantallaPadre?.route ?: rutaActual
 
     // Menú lateral y barra inferior: si ya estás dentro de esa sección, regresa a su
-    // pantalla principal; si no, cambia de sección conservando el estado de cada una.
+    // pantalla principal; si no, cambia de sección y abre su pantalla principal.
     fun irASeccion(pantalla: Pantalla) {
         if (pantalla.route == rutaSeccion) {
             navController.regresarA(pantalla)
@@ -164,14 +164,14 @@ fun PrincipalScreen(
 }
 
 // Función de extensión sobre NavController para navegar entre pantallas principales
-// manteniendo una pila limpia y conservando el estado de cada pestaña/menú.
+// manteniendo una pila limpia. Siempre abre la pantalla principal de la sección.
+// No usa saveState/restoreState: con esas opciones, si salías de Asistencia estando en
+// "Registrar salidas", al volver a Asistencia reaparecía Salidas ("congelada") hasta
+// tocar la flecha de regresar. Pasaba igual con cualquier pantalla interna.
 fun NavController.navegarAPantalla(pantalla: Pantalla) {
     navigate(pantalla.route) {
-        popUpTo(graph.findStartDestination().id) {
-            saveState = true
-        }
+        popUpTo(graph.findStartDestination().id)
         launchSingleTop = true
-        restoreState = true
     }
 }
 

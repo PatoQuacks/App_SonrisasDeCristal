@@ -19,7 +19,8 @@ private const val MENSAJE_SESION_EXPIRADA = "Tu sesión expiró. Cierra sesión 
 data class NuevoEmpleado(
     val nombre: String,
     val correo: String,
-    val roleId: Int,
+    // Tipo de personal elegido (va a Employee.occupation).
+    val ocupacion: String,
     val roomId: Int,
     val scheduleId: Int,
 )
