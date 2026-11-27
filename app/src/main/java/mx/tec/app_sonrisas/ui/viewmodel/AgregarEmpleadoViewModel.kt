@@ -11,7 +11,7 @@ import mx.tec.app_sonrisas.data.repository.EmpleadoRepository
 import retrofit2.HttpException
 import java.io.IOException
 
-private const val MENSAJE_USUARIO_EXISTE = "Este usuario ya existe. Usa otro correo."
+private const val MENSAJE_USUARIO_EXISTE = "Este usuario ya existe. Elige otro nombre de usuario."
 private const val MENSAJE_SESION_EXPIRADA = "Tu sesión expiró. Cierra sesión y vuelve a entrar."
 
 // Lo que captura el formulario "Agregar empleado".
